@@ -14,7 +14,8 @@ import {
 } from 'lucide-react'
 import { NavLink } from 'react-router-dom'
 import logoImg from '../assets/armjahad.png'
-import logoImg2 from '../assets/logo.png' 
+import logoImg2 from '../assets/logo.png'
+import logoImg3 from "../assets/logowhite.png"
 const items = [
   { to: '/', label: 'صفحه نخست', icon: Home },
   { to: '/cases/new', label: 'تشکیل پرونده', icon: FilePlus2 },
@@ -31,20 +32,33 @@ const items = [
 export default function Sidebar() {
   return (
     <aside className="sidebar">
-      <div className="brand">
-        <div className="brand-mark">
-          <img 
-    src={logoImg2} 
-    alt="لوگو" 
-    style={{ width: '70px', height: '70px', objectFit: 'contain' }} 
-  />
-          </div>
-        <div>
-          <strong style={{ color:'white', fontSize: '14px' }}>سامانه حقوقی جهاد دانشگاهی</strong>
-          <small>مدیریت هوشمند پرونده‌ها</small>
-        </div>
-      </div>
+      <div 
+  className="brand" 
+  style={{ 
+    display: 'flex', 
+    flexDirection: 'column', 
+    alignItems: 'center', 
+    textAlign: 'center', 
+    gap: '16px' 
+  }}
+>
+  <div className="brand-mark">
+    <img 
+      src={logoImg3} 
+      alt="لوگو" 
+      style={{ width: '150px', height: '150px', objectFit: 'contain' }} 
+    />
+  </div>
 
+  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+    <strong style={{ color: 'white', fontSize: '14px' }}>
+      سامانه حقوقی جهاد دانشگاهی
+    </strong>
+    <small style={{ color: '#9ca3af', marginTop: '4px' }}>
+      مدیریت هوشمند پرونده‌ها
+    </small>
+  </div>
+</div>
       <nav>
         {items.map(({ to, label, icon: Icon }) => (
           <NavLink

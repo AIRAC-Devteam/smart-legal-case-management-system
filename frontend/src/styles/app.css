@@ -43,8 +43,8 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
   border-bottom: 1px solid rgba(255,255,255,.08);
 }
 .brand-mark {
-  width: 69px;
-  height: 60px;
+  width: 150px;
+  height: 150px;
   flex: 0 0 46px;
   display: grid;
   place-items: center;
