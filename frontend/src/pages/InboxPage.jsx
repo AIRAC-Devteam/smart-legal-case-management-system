@@ -96,7 +96,7 @@ export default function InboxPage() {
                 <p>{task.description}</p>
                 <small>{task.meta}</small>
               </div>
-              <Link className="btn ghost btn-sm" to={task.to}>{task.action}</Link>
+              <Link className="case-entry-button" to={task.to}>{task.action}</Link>
             </article>
           )
         })}
