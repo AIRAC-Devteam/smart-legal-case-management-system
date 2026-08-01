@@ -58,11 +58,13 @@ export default function Sidebar() {
           const active = isPathActive(pathname, to)
           return (
             <NavLink
-              key={to}
-              to={to}
-              className={`nav-item ${active ? 'active' : ''}`}
-              aria-current={active ? 'page' : undefined}
-            >
+  key={to}
+  to={to}
+  end={to === '/' || to === '/cases'}
+  className={({ isActive }) =>
+    `nav-item ${isActive ? 'active' : ''}`
+  }
+>
               <span className="nav-icon"><Icon size={21} /></span>
               <span className="nav-label">{label}</span>
               {badge && <span className="nav-badge">{badge}</span>}
