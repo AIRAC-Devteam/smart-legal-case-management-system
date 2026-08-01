@@ -228,7 +228,7 @@ export default function DefenseDraftsPage() {
                     <h2>{editor.case_detail?.case_name || 'پرونده بدون عنوان'}</h2>
                     <p>شماره پرونده: {editor.case_detail?.case_number || 'ثبت نشده'}</p>
                   </div>
-                  <Link className="btn ghost btn-sm" to={`/cases/${editor.case}`}>
+                  <Link className="btn primary btn-sm" to={`/cases/${editor.case}`}>
                     <ExternalLink size={16} /> مشاهده پرونده
                   </Link>
                 </div>
