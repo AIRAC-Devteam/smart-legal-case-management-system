@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { Eye, Plus, Search, Trash2 } from 'lucide-react'
+import { Eye, FileSignature, Plus, Search, Trash2 } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { deleteCase, listCases } from '../api/client'
 
@@ -98,6 +98,7 @@ export default function CasesPage() {
                   <th>موضوع</th>
                   <th>کلاسه داخلی</th>
                   <th>موقعیت</th>
+                  <th>پیش‌نویس لایحه</th>
                   <th>تاریخ ثبت</th>
                   <th>عملیات</th>
                 </tr>
@@ -110,6 +111,16 @@ export default function CasesPage() {
                     <td>{item.subject_category || '—'}</td>
                     <td>{item.internal_ref || '—'}</td>
                     <td>{[item.province, item.city].filter(Boolean).join(' / ') || '—'}</td>
+                    <td>
+                      {item.defense_drafts_count > 0 ? (
+                        <span className="status-badge status-approved">
+                          <FileSignature size={13} />
+                          {item.defense_drafts_count.toLocaleString('fa-IR')} نسخه
+                        </span>
+                      ) : (
+                        <span className="status-badge status-draft">بدون پیش‌نویس</span>
+                      )}
+                    </td>
                     <td>{formatDate(item.created_at)}</td>
                     <td>
                       <div className="row-actions">

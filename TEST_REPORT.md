@@ -1,34 +1,46 @@
 # Test Report
 
-## Checks completed in the build environment
+## Static checks completed
 
-- Python syntax/AST check for all Backend `.py` files: PASS
-- `python -m compileall backend`: PASS
-- React/JavaScript/JSX parse check: PASS
-- Frontend local import/export contract check: PASS
-- CSS parse check: PASS
-- Extraction JSON-schema property/required consistency: PASS
-- Defense JSON-schema property/required consistency: PASS
-- Frontend/Backend defense route contract check: PASS
-- API client compatibility exports (`listCases`, `deleteCase`, `reextractDocument`, etc.): PASS
-- Final package secret-file check (`.env`, development DB, media files): PASS
+- Python source compilation for all Backend files: **PASS**
+- React/JavaScript/JSX parse using the TypeScript parser: **PASS**
+- Frontend relative-import resolution: **PASS**
+- API client named export/import contract: **PASS**
+- CSS parse with `tinycss2`: **PASS**
+- Frontend/Backend defense-generation route contract: **PASS**
+- DefenseDraft router, model creation path and migration presence: **PASS**
+- Git whitespace/error check: **PASS**
 
-## Runtime tests included
+## Backend runtime tests included
 
-`backend/cases/tests.py` contains smoke tests for:
+`backend/cases/tests.py` covers:
 
 - health endpoint
-- PDF upload and mocked extraction
+- PDF upload with mocked Gemini extraction
 - Case CRUD
-- defense generation from the Case endpoint
+- automatic saving of every generated defense draft
+- incrementing version numbers per Case
+- draft filtering by Case
+- editing draft text and review status
 
-Run after dependency installation:
+Run locally after dependencies are installed:
 
 ```powershell
 cd backend
+python manage.py migrate
 python manage.py test
 ```
 
-## Environment limitation during packaging
+## Frontend build
 
-The packaging sandbox did not provide the Python dependencies and its package registry was unavailable, so Django runtime tests and a live Gemini network call could not be executed here. The frontend archive originally contained Windows `node_modules`; those modules cannot perform a Linux Vite build because native Rollup binaries are platform-specific. `node_modules` is intentionally excluded from the final package. Run `npm install` on the target Windows machine, then `npm run build`.
+Run locally after dependency installation:
+
+```powershell
+cd frontend
+npm install
+npm run build
+```
+
+## Packaging-environment limitation
+
+The build sandbox package registries did not provide the required Django or npm packages, so live Django tests, a Vite production build, and a real Gemini call could not be executed in this environment. The project includes runtime tests and passed syntax, route-contract, import/export, CSS, and package-content checks. `node_modules`, `.env`, the development database, uploaded media, and `.git` are intentionally excluded from the final archive.

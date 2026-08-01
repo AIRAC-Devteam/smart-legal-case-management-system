@@ -38,10 +38,23 @@ async function parseResponse(response) {
   return data
 }
 
+function buildQuery(params = {}) {
+  const query = new URLSearchParams()
+  Object.entries(params).forEach(([key, value]) => {
+    if (value !== undefined && value !== null && value !== '') {
+      query.set(key, String(value))
+    }
+  })
+  const suffix = query.toString()
+  return suffix ? `?${suffix}` : ''
+}
+
+// Health
 export async function healthCheck() {
   return parseResponse(await fetch(`${API_BASE}/health/`))
 }
 
+// Documents
 export async function uploadDocument(file) {
   if (!file) throw new Error('فایلی انتخاب نشده است.')
 
@@ -86,6 +99,7 @@ export async function deleteDocument(documentId) {
   return true
 }
 
+// Cases
 export async function createCase(caseData) {
   if (!caseData) throw new Error('اطلاعات پرونده ارسال نشده است.')
 
@@ -147,6 +161,7 @@ export async function deleteCase(caseId) {
   return true
 }
 
+// Defense drafts
 export async function generateDefenseDraft(caseId) {
   if (!caseId) throw new Error('ابتدا پرونده باید تشکیل شود.')
 
@@ -160,6 +175,51 @@ export async function generateDefenseDraft(caseId) {
 
 export async function generateDefense(caseId) {
   return generateDefenseDraft(caseId)
+}
+
+export async function getCaseDefenseDrafts(caseId) {
+  if (!caseId) throw new Error('شناسه پرونده معتبر نیست.')
+  return parseResponse(
+    await fetch(`${API_BASE}/cases/${caseId}/defense-drafts/`),
+  )
+}
+
+export async function getDefenseDrafts(params = {}) {
+  const query = buildQuery({
+    case: params.caseId,
+    status: params.status,
+    q: params.q,
+  })
+  return parseResponse(await fetch(`${API_BASE}/defense-drafts/${query}`))
+}
+
+export async function getDefenseDraft(draftId) {
+  if (!draftId) throw new Error('شناسه پیش‌نویس معتبر نیست.')
+  return parseResponse(await fetch(`${API_BASE}/defense-drafts/${draftId}/`))
+}
+
+export async function updateDefenseDraft(draftId, draftData) {
+  if (!draftId) throw new Error('شناسه پیش‌نویس معتبر نیست.')
+  if (!draftData) throw new Error('اطلاعات پیش‌نویس ارسال نشده است.')
+
+  return parseResponse(
+    await fetch(`${API_BASE}/defense-drafts/${draftId}/`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(draftData),
+    }),
+  )
+}
+
+export async function deleteDefenseDraft(draftId) {
+  if (!draftId) throw new Error('شناسه پیش‌نویس معتبر نیست.')
+
+  await parseResponse(
+    await fetch(`${API_BASE}/defense-drafts/${draftId}/`, {
+      method: 'DELETE',
+    }),
+  )
+  return true
 }
 
 export { API_BASE }

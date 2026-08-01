@@ -1,14 +1,20 @@
 import os
 from pathlib import Path
 
+from django.db import transaction
+from django.db.models import Max, Q
 from django.utils import timezone
 from rest_framework import status, viewsets
 from rest_framework.decorators import action, api_view
 from rest_framework.parsers import FormParser, MultiPartParser
 from rest_framework.response import Response
 
-from .models import Case, Document
-from .serializers import CaseSerializer, DocumentSerializer
+from .models import Case, DefenseDraft, Document
+from .serializers import (
+    CaseSerializer,
+    DefenseDraftSerializer,
+    DocumentSerializer,
+)
 from .services.defense_generator import (
     DefenseGenerationError,
     generate_defense_brief,
@@ -120,8 +126,23 @@ class DocumentViewSet(viewsets.ModelViewSet):
 
 
 class CaseViewSet(viewsets.ModelViewSet):
-    queryset = Case.objects.select_related("notification_document").all()
+    queryset = (
+        Case.objects.select_related("notification_document")
+        .prefetch_related("defense_drafts")
+        .all()
+    )
     serializer_class = CaseSerializer
+
+    @action(detail=True, methods=["get"], url_path="defense-drafts")
+    def defense_drafts(self, request, pk=None):
+        case = self.get_object()
+        drafts = case.defense_drafts.select_related("case").all()
+        serializer = DefenseDraftSerializer(
+            drafts,
+            many=True,
+            context={"request": request},
+        )
+        return Response(serializer.data)
 
     @action(detail=True, methods=["post"], url_path="generate-defense")
     def generate_defense(self, request, pk=None):
@@ -140,12 +161,75 @@ class CaseViewSet(viewsets.ModelViewSet):
                 status=status.HTTP_502_BAD_GATEWAY,
             )
 
+        with transaction.atomic():
+            locked_case = Case.objects.select_for_update().get(pk=case.pk)
+            last_version = (
+                locked_case.defense_drafts.aggregate(max_version=Max("version"))[
+                    "max_version"
+                ]
+                or 0
+            )
+            draft = DefenseDraft.objects.create(
+                case=locked_case,
+                version=last_version + 1,
+                title=result.get("title") or "پیش‌نویس لایحه دفاعیه",
+                full_text=result.get("full_text") or "",
+                structured_data=result,
+                status=DefenseDraft.Status.DRAFT,
+                source_engine="gemini",
+                model_name=os.getenv("GEMINI_MODEL", "gemini-3.6-flash"),
+                requires_legal_review=True,
+            )
+
         return Response(
             {
                 "status": "completed",
                 "case_id": case.id,
+                "draft": DefenseDraftSerializer(
+                    draft,
+                    context={"request": request},
+                ).data,
                 "defense": result,
                 "requires_legal_review": True,
             },
-            status=status.HTTP_200_OK,
+            status=status.HTTP_201_CREATED,
         )
+
+
+class DefenseDraftViewSet(viewsets.ModelViewSet):
+    serializer_class = DefenseDraftSerializer
+    http_method_names = ["get", "patch", "delete", "head", "options"]
+
+    def get_queryset(self):
+        queryset = DefenseDraft.objects.select_related("case").all()
+        case_id = self.request.query_params.get("case")
+        draft_status = self.request.query_params.get("status")
+        query = self.request.query_params.get("q", "").strip()
+
+        if case_id:
+            queryset = queryset.filter(case_id=case_id)
+        if draft_status:
+            queryset = queryset.filter(status=draft_status)
+        if query:
+            queryset = queryset.filter(
+                Q(title__icontains=query)
+                | Q(full_text__icontains=query)
+                | Q(case__case_name__icontains=query)
+                | Q(case__case_number__icontains=query)
+                | Q(case__internal_ref__icontains=query)
+            )
+        return queryset
+
+    def perform_update(self, serializer):
+        requested_status = serializer.validated_data.get("status")
+        reviewed_at = serializer.instance.reviewed_at
+
+        if requested_status in {
+            DefenseDraft.Status.UNDER_REVIEW,
+            DefenseDraft.Status.APPROVED,
+        }:
+            reviewed_at = reviewed_at or timezone.now()
+        elif requested_status == DefenseDraft.Status.DRAFT:
+            reviewed_at = None
+
+        serializer.save(reviewed_at=reviewed_at)

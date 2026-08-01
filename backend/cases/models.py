@@ -112,3 +112,46 @@ class Case(models.Model):
 
     def __str__(self):
         return self.case_name or self.case_number or f"Case #{self.pk}"
+
+
+class DefenseDraft(models.Model):
+    class Status(models.TextChoices):
+        DRAFT = "draft", "پیش‌نویس"
+        UNDER_REVIEW = "under_review", "در حال بررسی"
+        APPROVED = "approved", "تأییدشده"
+        ARCHIVED = "archived", "بایگانی‌شده"
+
+    case = models.ForeignKey(
+        Case,
+        on_delete=models.CASCADE,
+        related_name="defense_drafts",
+    )
+    version = models.PositiveIntegerField(default=1)
+    title = models.CharField(max_length=255, blank=True)
+    full_text = models.TextField()
+    structured_data = models.JSONField(default=dict, blank=True)
+    status = models.CharField(
+        max_length=24,
+        choices=Status.choices,
+        default=Status.DRAFT,
+        db_index=True,
+    )
+    source_engine = models.CharField(max_length=32, default="gemini")
+    model_name = models.CharField(max_length=100, blank=True)
+    requires_legal_review = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    reviewed_at = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        ordering = ["-created_at"]
+        constraints = [
+            models.UniqueConstraint(
+                fields=["case", "version"],
+                name="unique_defense_draft_version_per_case",
+            )
+        ]
+
+    def __str__(self):
+        case_label = self.case.case_number or self.case.case_name or self.case_id
+        return f"Draft v{self.version} - {case_label}"

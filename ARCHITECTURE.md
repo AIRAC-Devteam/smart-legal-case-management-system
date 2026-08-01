@@ -1,53 +1,66 @@
 # Architecture
 
 ```text
-┌──────────────────────────────────────┐
-│ React / Vite                         │
-│ - Upload document                    │
-│ - Review/edit extracted fields       │
-│ - Cases list/details                 │
-│ - Review/edit defense draft          │
-└──────────────────┬───────────────────┘
-                   │ REST API
-                   ▼
-┌──────────────────────────────────────┐
-│ Django + DRF                         │
-│ - Document API                       │
-│ - Case CRUD API                      │
-│ - Defense action on confirmed Case   │
-│ - Validation                         │
-└──────────────┬───────────────┬───────┘
-               │               │
-               ▼               ▼
-       SQLite / media       Gemini API
-                           ┌──────┴──────┐
-                           ▼             ▼
-                      Extraction     Defense draft
+┌──────────────────────────────────────────────┐
+│ React / Vite                                 │
+│ - Upload and review legal documents          │
+│ - Register and edit confirmed cases          │
+│ - Generate and edit defense drafts           │
+│ - Central draft repository and version history│
+│ - Inbox, lawsuits portfolio and reports      │
+└──────────────────────┬───────────────────────┘
+                       │ REST API
+                       ▼
+┌──────────────────────────────────────────────┐
+│ Django + Django REST Framework               │
+│ - Document upload/extraction API             │
+│ - Case CRUD API                              │
+│ - Defense generation on confirmed Case       │
+│ - Versioned DefenseDraft CRUD API            │
+└───────────────┬───────────────────┬──────────┘
+                │                   │
+                ▼                   ▼
+       SQLite / media          Gemini API
+       Case + Drafts      Extraction + generation
 ```
 
-## Human-in-the-loop
+## Human-in-the-loop flow
 
-Extraction output is not treated as the final legal record. It fills an editable Case form. The operator reviews and corrects the form before `POST /api/v1/cases/` creates the Case.
+```text
+Document upload
+  → Gemini structured extraction
+  → editable review form
+  → confirmed Case record
+  → Gemini defense generation
+  → automatically saved DefenseDraft version
+  → legal review / editing / approval
+```
 
-Defense generation is intentionally attached to the Case endpoint:
+The generation endpoint is attached to an existing Case:
 
 ```text
 POST /api/v1/cases/{id}/generate-defense/
 ```
 
-The backend reloads the confirmed Case from the database and combines it with the stored `notification_data`. Therefore unsaved frontend state is never treated as the official source for the defense draft.
+The Backend reloads the confirmed Case from the database. Unsaved frontend state is never treated as the official source for the generated defense draft.
 
-## Data flow
+## Versioned defense drafts
+
+Every successful generation creates a new `DefenseDraft` row. Previous versions remain available.
 
 ```text
-Document upload
-  → Document record
-  → Gemini structured extraction
-  → Editable form
-  → Confirmed Case record
-  → Gemini defense generation
-  → Editable defense draft
+Case 1
+ ├── DefenseDraft v1 — draft
+ ├── DefenseDraft v2 — under_review
+ └── DefenseDraft v3 — approved
 ```
+
+Draft statuses:
+
+- `draft`
+- `under_review`
+- `approved`
+- `archived`
 
 ## Gemini-only service layer
 
@@ -59,8 +72,14 @@ cases/services/defense_generator.py
     └── defense_schema.py
 ```
 
-Legacy OpenAI, Ollama and local OCR extraction paths are not part of this version.
+## Optional demo data
+
+After migration, populate non-sensitive sample data:
+
+```powershell
+python manage.py seed_demo
+```
 
 ## Production hardening
 
-The current DRF permission is `AllowAny` for development. Before deployment on real legal documents add authentication/RBAC, protected file delivery, audit logging, HTTPS, backups, rate limiting, and a reviewed data-retention policy.
+The current MVP uses `AllowAny`. Before using real legal documents in production, add authentication and RBAC, protected file delivery, audit logging, HTTPS, backups, rate limiting, secret management, encrypted storage where required, and a reviewed retention policy.
