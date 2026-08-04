@@ -1,14 +1,13 @@
 import { useEffect, useMemo, useState } from 'react'
-import { Eye, FileSignature, Plus, Search, Trash2 } from 'lucide-react'
+import { Eye, FileSignature, Plus, Search, Trash2, FolderOpen,   BriefcaseBusiness } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { deleteCase, listCases } from '../api/client'
-
 export default function CasesPage() {
   const [cases, setCases] = useState([])
   const [query, setQuery] = useState('')
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
-
+    const [expandedTitleId, setExpandedTitleId] = useState(null)
   useEffect(() => {
     const load = async () => {
       setLoading(true)
@@ -74,8 +73,75 @@ export default function CasesPage() {
             placeholder="جستجو بر اساس نام، شماره پرونده، کلاسه، موضوع یا شهر…"
           />
         </div>
-        <span className="result-count">{filtered.length.toLocaleString('fa-IR')} پرونده</span>
-      </div>
+<span
+  className="result-count"
+  style={{
+    minWidth: '20px',
+    height: '56px',
+    padding: '10px 18px',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: '18px',
+    background: 'linear-gradient(135deg, #f6fffd, #e9f8f6)',
+    border: '1.5px solid #16a89b',
+    borderRadius: '20px',
+    color: '#087d75',
+    whiteSpace: 'nowrap',
+    boxShadow: '0 10px 25px rgba(8, 125, 117, 0.12)',
+  }}
+>
+  {/* متن */}
+  <span
+    style={{
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'flex-start',
+      justifyContent: 'center',
+      lineHeight: '1.3',
+    }}
+  >
+    <span
+      style={{
+        fontSize: '14px',
+        fontWeight: '600',
+        color: '#245b58',
+      }}
+    >
+      کل پرونده‌ها
+    </span>
+
+    <strong
+      style={{
+        fontSize: '24px',
+        fontWeight: '800',
+        color: '#079589',
+        marginTop: '2px',
+      }}
+    >
+      {filtered.length.toLocaleString('fa-IR')} پرونده
+    </strong>
+  </span>
+
+
+  {/* آیکون */}
+  <span
+    style={{
+      width: '48px',
+      height: '48px',
+      flexShrink: 0,
+      display: 'inline-flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      borderRadius: '50%',
+      background: '#d8f3ef',
+      color: '#0b9489',
+    }}
+  >
+    <BriefcaseBusiness size={25} />
+  </span>
+
+</span>    </div>
 
       {error && <div className="error-banner">{error}</div>}
 
@@ -90,7 +156,7 @@ export default function CasesPage() {
           </div>
         ) : (
           <div className="table-scroll">
-            <table>
+            <table className='cases-table'>
               <thead>
                 <tr>
                   <th>شماره پرونده</th>
@@ -107,7 +173,21 @@ export default function CasesPage() {
                 {filtered.map((item) => (
                   <tr key={item.id}>
                     <td className="mono-cell">{item.case_number || '—'}</td>
-                    <td><strong>{item.case_name || 'بدون عنوان'}</strong></td>
+                        <td data-label="نام پرونده" className="case-name-cell">
+  <button
+    type="button"
+    className={`case-name-button ${
+      expandedTitleId === item.id ? 'expanded' : ''
+    }`}
+    onClick={() =>
+      setExpandedTitleId(
+        expandedTitleId === item.id ? null : item.id
+      )
+    }
+  >
+    {item.case_name || 'بدون عنوان'}
+  </button>
+</td>
                     <td>{item.subject_category || '—'}</td>
                     <td>{item.internal_ref || '—'}</td>
                     <td>{[item.province, item.city].filter(Boolean).join(' / ') || '—'}</td>

@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { BarChart3, CheckCircle2, FileSignature, Files, ShieldAlert } from 'lucide-react'
+import { BarChart3, CheckCircle2, FileSignature, Files, ShieldAlert,FolderOpen,LockKeyhole, } from 'lucide-react'
 import { getCases, getDefenseDrafts } from '../api/client'
 import {
   CASE_TYPE_LABELS,
@@ -7,7 +7,11 @@ import {
   FINANCIAL_LABELS,
   formatDate,
 } from '../utils/legal'
+import DashboardMetricCard, {
+  DashboardMetricGrid,
+} from '../components/DashboardMetricCard'
 
+import { buildDailySeries } from '../utils/metricSeries'
 export default function ReportsPage() {
   const [cases, setCases] = useState([])
   const [drafts, setDrafts] = useState([])
@@ -46,7 +50,41 @@ export default function ReportsPage() {
       confidential: cases.filter((item) => item.classification === 'confidential').length,
     }
   }, [cases, drafts])
+  const reportStats = useMemo(() => {
+  const approvedDrafts = drafts.filter(
+    (draft) => draft.status === 'approved',
+  )
 
+  const confidentialCases = cases.filter(
+    (item) => item.classification === 'confidential',
+  )
+
+  return {
+    totalCases: cases.length,
+    totalDrafts: drafts.length,
+    approvedDrafts: approvedDrafts.length,
+    confidentialCases: confidentialCases.length,
+  }
+}, [cases, drafts])
+const reportSeries = useMemo(() => {
+  const approvedDrafts = drafts.filter(
+    (draft) => draft.status === 'approved',
+  )
+
+  const confidentialCases = cases.filter(
+    (item) => item.classification === 'confidential',
+  )
+
+  return {
+    cases: buildDailySeries(cases),
+
+    drafts: buildDailySeries(drafts),
+
+    approved: buildDailySeries(approvedDrafts),
+
+    confidential: buildDailySeries(confidentialCases),
+  }
+}, [cases, drafts])
   const activity = useMemo(() => [
     ...cases.slice(0, 5).map((item) => ({
       id: `case-${item.id}`,
@@ -75,10 +113,63 @@ export default function ReportsPage() {
       {error && <div className="error-banner">{error}</div>}
 
       <section className="metric-grid report-metrics">
-        <ReportMetric icon={Files} label="کل پرونده‌ها" value={cases.length} />
-        <ReportMetric icon={FileSignature} label="کل نسخه‌های لایحه" value={drafts.length} />
-        <ReportMetric icon={CheckCircle2} label="لوایح تأییدشده" value={data.approved} />
-        <ReportMetric icon={ShieldAlert} label="پرونده محرمانه" value={data.confidential} />
+        <DashboardMetricGrid>
+  <DashboardMetricCard
+    label="کل پرونده‌ها"
+    value={reportStats.totalCases}
+    total={reportStats.totalCases}
+    icon={FolderOpen}
+    sparkline={reportSeries.cases}
+    footer="پرونده‌های ثبت‌شده در سامانه"
+    footerValue={reportStats.totalCases}
+    tone="teal"
+  />
+
+  <DashboardMetricCard
+    label="کل نسخه‌های لایحه"
+    value={reportStats.totalDrafts}
+    total={reportStats.totalDrafts}
+    icon={FileSignature}
+    sparkline={reportSeries.drafts}
+    footer="تمام نسخه‌های تولیدشده"
+    footerValue={reportStats.totalDrafts}
+    tone="blue"
+  />
+
+  <DashboardMetricCard
+    label="لوایح تأییدشده"
+    value={reportStats.approvedDrafts}
+    total={reportStats.totalDrafts}
+    icon={CheckCircle2}
+    sparkline={reportSeries.approved}
+    footer="سهم از کل نسخه‌های لایحه"
+    footerValue={`${reportStats.totalDrafts
+      ? Math.round(
+          (reportStats.approvedDrafts /
+            reportStats.totalDrafts) *
+            100,
+        )
+      : 0}٪`}
+    tone="green"
+  />
+
+  <DashboardMetricCard
+    label="پرونده محرمانه"
+    value={reportStats.confidentialCases}
+    total={reportStats.totalCases}
+    icon={LockKeyhole}
+    sparkline={reportSeries.confidential}
+    footer="سهم از کل پرونده‌ها"
+    footerValue={`${reportStats.totalCases
+      ? Math.round(
+          (reportStats.confidentialCases /
+            reportStats.totalCases) *
+            100,
+        )
+      : 0}٪`}
+    tone="red"
+  />
+</DashboardMetricGrid>
       </section>
 
       {loading ? (

@@ -9,7 +9,9 @@ import {
 import { Link } from 'react-router-dom'
 import { getCases, getDefenseDrafts } from '../api/client'
 import { DRAFT_STATUS_LABELS, formatDate } from '../utils/legal'
-
+import DashboardMetricCard, {
+  DashboardMetricGrid,
+} from '../components/DashboardMetricCard'
 export default function InboxPage() {
   const [cases, setCases] = useState([])
   const [drafts, setDrafts] = useState([])
@@ -35,13 +37,18 @@ export default function InboxPage() {
   }, [])
 
   const tasks = useMemo(() => buildTasks(cases, drafts), [cases, drafts])
-  const visibleTasks = filter === 'all' ? tasks : tasks.filter((item) => item.type === filter)
+const openTasks = tasks.filter((item) => item.type !== 'completed')
 
+const visibleTasks =
+  filter === 'all'
+    ? openTasks
+    : tasks.filter((item) => item.type === filter)
   const stats = {
-    all: tasks.length,
+    all: openTasks.length,
     defense: tasks.filter((item) => item.type === 'defense').length,
     review: tasks.filter((item) => item.type === 'review').length,
     incomplete: tasks.filter((item) => item.type === 'incomplete').length,
+    completed: tasks.filter((item) => item.type === 'completed').length,
   }
 
   return (
@@ -55,10 +62,57 @@ export default function InboxPage() {
       </header>
 
       <section className="metric-grid inbox-metrics">
-        <ActionMetric label="کل اقدامات" value={stats.all} icon={ClipboardList} />
-        <ActionMetric label="نیازمند تولید لایحه" value={stats.defense} icon={FileSignature} />
-        <ActionMetric label="در انتظار بررسی" value={stats.review} icon={PencilLine} />
-        <ActionMetric label="اطلاعات ناقص" value={stats.incomplete} icon={AlertTriangle} />
+        <DashboardMetricGrid>
+  <DashboardMetricCard
+    label="کل اقدامات باز"
+    value={stats.all}
+    total={stats.all}
+    icon={ClipboardList}
+    footer="اقدامات نیازمند رسیدگی"
+    footerValue={stats.all}
+    tone="teal"
+  />
+
+  <DashboardMetricCard
+    label="نیازمند تولید لایحه"
+    value={stats.defense}
+    total={stats.all}
+    icon={FileSignature}
+    footer="پرونده‌های فاقد پیش‌نویس"
+    footerValue={stats.defense}
+    tone="orange"
+  />
+
+  <DashboardMetricCard
+    label="در انتظار بررسی"
+    value={stats.review}
+    total={stats.all}
+    icon={PencilLine}
+    footer="پیش‌نویس‌های آماده بررسی"
+    footerValue={stats.review}
+    tone="blue"
+  />
+
+  <DashboardMetricCard
+    label="اطلاعات ناقص"
+    value={stats.incomplete}
+    total={stats.all}
+    icon={AlertTriangle}
+    footer="پرونده‌های نیازمند تکمیل"
+    footerValue={stats.incomplete}
+    tone="red"
+  />
+
+  <DashboardMetricCard
+    label="پرونده‌های کامل"
+    value={stats.completed}
+    total={cases.length}
+    icon={CheckCircle2}
+    footer="اطلاعات اصلی تکمیل‌شده"
+    footerValue={stats.completed}
+    tone="green"
+  />
+</DashboardMetricGrid>
       </section>
 
       <div className="filter-chips inbox-filters">
@@ -67,6 +121,7 @@ export default function InboxPage() {
           ['defense', 'تولید لایحه'],
           ['review', 'بررسی لایحه'],
           ['incomplete', 'تکمیل پرونده'],
+          ['completed', 'پرونده‌های کامل'],
         ].map(([value, label]) => (
           <button key={value} className={`filter-chip ${filter === value ? 'active' : ''}`} onClick={() => setFilter(value)}>{label}</button>
         ))}
@@ -122,14 +177,31 @@ function buildTasks(cases, drafts) {
         action: 'ورود به پرونده',
       })
     }
-
+const notification = item.notification_data || {}
     const missing = [
-      !item.case_number && 'شماره پرونده',
-      !item.authority_category && 'مرجع رسیدگی',
-      !item.subject_category && 'موضوع',
-      !item.plaintiff_defendant && 'طرفین پرونده',
-    ].filter(Boolean)
+  !item.case_name && 'نام پرونده',
+  !item.case_number && 'شماره پرونده',
+  !(notification.issue_date || item.creation_date) && 'تاریخ صدور',
+  !item.plaintiff_defendant && 'طرفین پرونده',
+  !item.subject_category && 'موضوع',
+  !item.authority_category && 'مرجع رسیدگی',
+  !item.case_type && 'نوع پرونده',
+  !item.classification && 'طبقه‌بندی',
+  !item.financial_status && 'وضعیت مالی',
 
+  item.financial_status === 'financial' &&
+    !item.amount &&
+    'مبلغ پرونده',
+
+  !item.submitted_by && 'ثبت‌کننده پرونده',
+
+  item.has_imprisonment == null &&
+    'وضعیت حبس',
+
+  !item.case_status && 'وضعیت پرونده',
+  !item.province && 'استان',
+  !item.city && 'شهر',
+].filter(Boolean)
     if (missing.length) {
       tasks.push({
         id: `incomplete-${item.id}`,
@@ -142,7 +214,19 @@ function buildTasks(cases, drafts) {
         to: `/cases/${item.id}`,
         action: 'تکمیل اطلاعات',
       })
-    }
+    }else {
+  tasks.push({
+    id: `completed-${item.id}`,
+    type: 'completed',
+    icon: CheckCircle2,
+    priority: 'low',
+    title: `پرونده کامل: ${item.case_name || 'پرونده بدون عنوان'}`,
+    description: 'اطلاعات اصلی این پرونده تکمیل شده است.',
+    meta: `شماره پرونده: ${item.case_number || 'ثبت نشده'} · آخرین ویرایش ${formatDate(item.updated_at, false)}`,
+    to: `/cases/${item.id}`,
+    action: 'مشاهده پرونده',
+  })
+}
   })
 
   drafts.filter((draft) => ['draft', 'under_review'].includes(draft.status)).forEach((draft) => {

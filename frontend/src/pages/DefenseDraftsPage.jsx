@@ -7,6 +7,8 @@ import {
   Save,
   Search,
   Trash2,
+  FileText,
+   PencilLine,
 } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import {
@@ -19,7 +21,11 @@ import {
   draftStatusClass,
   formatDate,
 } from '../utils/legal'
+import DashboardMetricCard, {
+  DashboardMetricGrid,
+} from '../components/DashboardMetricCard'
 
+import { buildDailySeries } from '../utils/metricSeries'
 const statusOptions = [
   { value: 'all', label: 'همه' },
   { value: 'draft', label: 'پیش‌نویس' },
@@ -81,7 +87,41 @@ export default function DefenseDraftsPage() {
     under_review: drafts.filter((item) => item.status === 'under_review').length,
     approved: drafts.filter((item) => item.status === 'approved').length,
   }), [drafts])
+  const draftStats = useMemo(() => ({
+  total: drafts.length,
 
+  draft: drafts.filter(
+    (item) => item.status === 'draft',
+  ).length,
+
+  underReview: drafts.filter(
+    (item) => item.status === 'under_review',
+  ).length,
+
+  approved: drafts.filter(
+    (item) => item.status === 'approved',
+  ).length,
+}), [drafts])
+
+const draftSeries = useMemo(() => ({
+  total: buildDailySeries(drafts),
+
+  draft: buildDailySeries(
+    drafts.filter((item) => item.status === 'draft'),
+  ),
+
+  underReview: buildDailySeries(
+    drafts.filter(
+      (item) => item.status === 'under_review',
+    ),
+  ),
+
+  approved: buildDailySeries(
+    drafts.filter(
+      (item) => item.status === 'approved',
+    ),
+  ),
+}), [drafts])
   const selectDraft = (draft) => {
     setSelectedId(draft.id)
     setEditor(toEditor(draft))
@@ -148,10 +188,51 @@ export default function DefenseDraftsPage() {
       </header>
 
       <section className="metric-grid draft-metrics">
-        <MiniMetric label="کل نسخه‌ها" value={stats.all} />
-        <MiniMetric label="پیش‌نویس" value={stats.draft} tone="neutral" />
-        <MiniMetric label="در حال بررسی" value={stats.under_review} tone="warning" />
-        <MiniMetric label="تأییدشده" value={stats.approved} tone="success" />
+        <DashboardMetricGrid>
+  <DashboardMetricCard
+    label="کل نسخه‌ها"
+    value={draftStats.total}
+    total={draftStats.total}
+    icon={FileSignature}
+    sparkline={draftSeries.total}
+    footer="تمام نسخه‌های تولیدشده"
+    footerValue={draftStats.total}
+    tone="teal"
+  />
+
+  <DashboardMetricCard
+    label="پیش‌نویس"
+    value={draftStats.draft}
+    total={draftStats.total}
+    icon={FileText}
+    sparkline={draftSeries.draft}
+    footer="نسخه‌های در وضعیت پیش‌نویس"
+    footerValue={draftStats.draft}
+    tone="blue"
+  />
+
+  <DashboardMetricCard
+    label="در حال بررسی"
+    value={draftStats.underReview}
+    total={draftStats.total}
+    icon={PencilLine}
+    sparkline={draftSeries.underReview}
+    footer="نسخه‌های منتظر بررسی حقوقی"
+    footerValue={draftStats.underReview}
+    tone="orange"
+  />
+
+  <DashboardMetricCard
+    label="تأییدشده"
+    value={draftStats.approved}
+    total={draftStats.total}
+    icon={CheckCircle2}
+    sparkline={draftSeries.approved}
+    footer="نسخه‌های نهایی و تأییدشده"
+    footerValue={draftStats.approved}
+    tone="green"
+  />
+</DashboardMetricGrid>
       </section>
 
       <div className="draft-toolbar-main">
@@ -228,9 +309,23 @@ export default function DefenseDraftsPage() {
                     <h2>{editor.case_detail?.case_name || 'پرونده بدون عنوان'}</h2>
                     <p>شماره پرونده: {editor.case_detail?.case_number || 'ثبت نشده'}</p>
                   </div>
-                  <Link className="btn primary btn-sm" to={`/cases/${editor.case}`}>
-                    <ExternalLink size={16} /> مشاهده پرونده
-                  </Link>
+       <Link
+  className="btn primary btn-sm"
+  to={`/cases/${editor.case}`}
+  style={{
+    width: '158px',
+    minWidth: '158px',
+    height: '46px',
+    flex: '0 0 158px',
+    flexShrink: 0,
+    alignSelf: 'flex-start',
+    marginTop: '20px',
+    whiteSpace: 'nowrap',
+  }}
+>
+  <ExternalLink size={16} />
+  مشاهده پرونده
+</Link>
                 </div>
 
                 <div className="form-grid two draft-meta-form">
