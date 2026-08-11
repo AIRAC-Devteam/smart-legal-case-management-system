@@ -7,7 +7,7 @@ load_dotenv(BASE_DIR / ".env")
 
 SECRET_KEY = os.getenv("DJANGO_SECRET_KEY", "dev-only-secret-key")
 DEBUG = os.getenv("DJANGO_DEBUG", "True").lower() in {"1", "true", "yes", "on"}
-ALLOWED_HOSTS = [x.strip() for x in os.getenv("DJANGO_ALLOWED_HOSTS", "127.0.0.1,localhost,backend").split(",") if x.strip()]
+ALLOWED_HOSTS = [x.strip() for x in os.getenv("DJANGO_ALLOWED_HOSTS", "127.0.0.1,localhost,backend,smart-legal-case-management-system-xi.vercel.app").split(",") if x.strip()]
 
 INSTALLED_APPS = [
     "django.contrib.admin",
@@ -82,7 +82,7 @@ CORS_ALLOWED_ORIGINS = [
         "http://127.0.0.1:5173,"
         "http://localhost:3000,"
         "http://127.0.0.1:3000"
-        ".vercel.app",
+        "smart-legal-case-management-system-xi.vercel.app",
 
         ).split(",")
     if x.strip()
