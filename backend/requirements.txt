@@ -3,3 +3,5 @@ djangorestframework>=3.16,<4.0
 django-cors-headers>=4.7,<5.0
 python-dotenv>=1,<2
 google-genai>=2.13,<3.0
+psycopg[binary]
+dj-database-url
