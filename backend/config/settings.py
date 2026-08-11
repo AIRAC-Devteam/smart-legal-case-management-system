@@ -6,9 +6,22 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 load_dotenv(BASE_DIR / ".env")
 
 SECRET_KEY = os.getenv("DJANGO_SECRET_KEY", "dev-only-secret-key")
-DEBUG = os.getenv("DJANGO_DEBUG", "True").lower() in {"1", "true", "yes", "on"}
-ALLOWED_HOSTS = [x.strip() for x in os.getenv("DJANGO_ALLOWED_HOSTS", "127.0.0.1,localhost,backend,smart-legal-case-management-system-xi.vercel.app").split(",") if x.strip()]
+DEBUG = os.getenv("DJANGO_DEBUG", "False").lower() in {"1", "true", "yes", "on"}
+ALLOWED_HOSTS = [
+    "127.0.0.1",
+    "localhost",
+    "backend",
+    ".vercel.app",
+]
 
+extra_hosts = os.getenv("DJANGO_ALLOWED_HOSTS", "")
+
+if extra_hosts:
+    ALLOWED_HOSTS.extend(
+        host.strip()
+        for host in extra_hosts.split(",")
+        if host.strip()
+    )
 INSTALLED_APPS = [
     "django.contrib.admin",
     "django.contrib.auth",
@@ -82,7 +95,7 @@ CORS_ALLOWED_ORIGINS = [
         "http://127.0.0.1:5173,"
         "http://localhost:3000,"
         "http://127.0.0.1:3000,"
-        "smart-legal-case-management-system-xi.vercel.app",
+        "https://smart-legal-case-management-system.vercel.app",
         ).split(",")
     if x.strip()
 ]
