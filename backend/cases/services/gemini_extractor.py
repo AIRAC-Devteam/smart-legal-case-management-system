@@ -99,7 +99,12 @@ def extract_notice_with_gemini(file_path: str) -> dict:
         raise GeminiExtractionError(
             "GEMINI_API_KEY تنظیم نشده است. فایل backend/.env را بررسی کنید."
         )
-
+    print(
+    "GEMINI KEY DEBUG:",
+    "length =", len(api_key),
+    "prefix =", api_key[:3],
+    "suffix =", api_key[-4:] if len(api_key) >= 4 else "",
+    )
     model = os.getenv("GEMINI_MODEL", "gemini-3.6-flash").strip()
     file_base64, mime_type = _read_document(file_path)
 
