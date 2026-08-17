@@ -17,7 +17,8 @@ import {
 } from 'lucide-react'
 import { Link, useLocation } from 'react-router-dom'
 import logoImg from '../assets/logowhite.png'
-
+import { clearAuthToken } from '../api/client'
+import { useNavigate } from 'react-router-dom'
 const items = [
   {
     to: '/',
@@ -118,7 +119,12 @@ function getActivePath(pathname) {
 export default function Sidebar() {
   const { pathname } = useLocation()
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
-
+  const navigate = useNavigate()
+  const handleLogout = () => {
+    clearAuthToken()
+    setMobileMenuOpen(false)
+    navigate('/login', { replace: true })
+  }
   const activePath = getActivePath(pathname)
 
   const mobileMainItems = items.filter((item) =>
@@ -201,7 +207,13 @@ export default function Sidebar() {
             },
           )}
         </nav>
-
+        <button
+          type="button"
+          className="sidebar-logout"
+          onClick={handleLogout}
+        >
+          خروج از حساب
+        </button> 
         <div className="sidebar-footer">
           <BriefcaseBusiness size={18} />
 
@@ -289,6 +301,13 @@ export default function Sidebar() {
             },
           )}
         </nav>
+          <button
+          type="button"
+          className="mobile-drawer-logout"
+          onClick={handleLogout}
+        >
+          خروج از حساب
+        </button>
       </aside>
 
       {/* چهار گزینه اصلی پایین موبایل */}

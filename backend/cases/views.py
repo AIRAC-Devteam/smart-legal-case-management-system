@@ -5,7 +5,13 @@ from django.db import transaction
 from django.db.models import Max, Q
 from django.utils import timezone
 from rest_framework import status, viewsets
-from rest_framework.decorators import action, api_view
+from rest_framework.decorators import (
+    action,
+    api_view,
+    permission_classes,
+)
+
+from rest_framework.permissions import AllowAny
 from rest_framework.parsers import FormParser, MultiPartParser
 from rest_framework.response import Response
 
