@@ -42,6 +42,11 @@ async function parseResponse(response) {
   }
 
   if (!response.ok) {
+     if (data?.non_field_errors) {
+      throw new Error(
+        'نام کاربری یا رمز عبور اشتباه است.',
+      )
+    }
     const validationMessage =
       data && typeof data === 'object'
         ? Object.entries(data)

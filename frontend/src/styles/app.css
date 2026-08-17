@@ -1626,3 +1626,988 @@ tbody tr:hover { background: #fbfdfd; }
     box-shadow: 0 6px 15px rgba(8, 125, 117, 0.22);
   }
 }
+.auth-page {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 32px;
+  background:
+    radial-gradient(
+      circle at 80% 15%,
+      rgba(21, 165, 153, 0.08),
+      transparent 28%
+    ),
+    #f5f8fa;
+  color: #132238;
+}
+
+.auth-shell {
+  width: min(1180px, 100%);
+  min-height: 690px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  overflow: hidden;
+  border-radius: 30px;
+  border: 1px solid #e1e9ee;
+  background: #fff;
+  box-shadow:
+    0 30px 70px rgba(15, 36, 50, 0.08);
+}
+
+.auth-brand-panel {
+  position: relative;
+  padding: 54px 48px 40px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  overflow: hidden;
+  background:
+    linear-gradient(
+      145deg,
+      #f7ffff 0%,
+      #eaf9f7 100%
+    );
+}
+
+.auth-brand-content {
+  position: relative;
+  z-index: 2;
+  text-align: center;
+  margin-top: 55px;
+}
+
+.auth-brand-logo {
+  width: 176px;
+  height: 176px;
+  margin: 0 auto 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 38px;
+  background:
+    linear-gradient(
+      145deg,
+      #19b5a5,
+      #078f84
+    );
+  box-shadow:
+    0 24px 45px rgba(8, 143, 132, 0.2);
+}
+
+.auth-brand-logo img {
+  width: 145px;
+  height: 145px;
+  object-fit: contain;
+}
+
+.auth-brand-content h1 {
+  margin: 0;
+  font-size: 30px;
+  font-weight: 900;
+  color: #102036;
+}
+
+.auth-brand-content p {
+  margin: 14px 0 0;
+  font-size: 16px;
+  color: #8695a5;
+}
+
+.auth-features {
+  position: relative;
+  z-index: 2;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+}
+
+.auth-feature {
+  text-align: center;
+  color: #718091;
+}
+
+.auth-feature span {
+  width: 54px;
+  height: 54px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 10px;
+  border-radius: 18px;
+  color: #09998e;
+  background: rgba(255, 255, 255, 0.78);
+  box-shadow:
+    0 10px 25px rgba(16, 70, 67, 0.06);
+}
+
+.auth-feature small {
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.auth-decoration {
+  position: absolute;
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+.auth-decoration-one {
+  width: 280px;
+  height: 280px;
+  right: -110px;
+  bottom: 70px;
+  border: 1px solid rgba(19, 166, 152, 0.08);
+}
+
+.auth-decoration-two {
+  width: 180px;
+  height: 180px;
+  left: -60px;
+  top: -40px;
+  background: rgba(20, 177, 161, 0.035);
+}
+
+.auth-form-panel {
+  padding: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #fbfcfd;
+}
+
+.auth-card {
+  width: min(520px, 100%);
+  padding: 48px;
+  border: 1px solid #e7ecef;
+  border-radius: 28px;
+  background: #fff;
+  box-shadow:
+    0 20px 60px rgba(23, 42, 58, 0.06);
+}
+
+.auth-lock {
+  width: 58px;
+  height: 58px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 24px;
+  border-radius: 20px;
+  color: #079b8f;
+  background: #eaf9f7;
+}
+
+.auth-heading {
+  margin-bottom: 34px;
+  text-align: center;
+}
+
+.auth-heading h2 {
+  margin: 0;
+  font-size: 34px;
+  line-height: 1.4;
+  font-weight: 900;
+  color: #14243a;
+}
+
+.auth-heading p {
+  margin: 10px 0 0;
+  color: #8492a2;
+  font-size: 14px;
+}
+
+.auth-field {
+  margin-bottom: 20px;
+}
+
+.auth-field label {
+  display: block;
+  margin-bottom: 9px;
+  font-size: 14px;
+  font-weight: 800;
+  color: #243349;
+}
+
+.auth-input-wrapper {
+  height: 60px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 0 17px;
+  border: 1px solid #dbe4e9;
+  border-radius: 16px;
+  color: #8b9aaa;
+  background: #fff;
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.auth-input-wrapper:focus-within {
+  border-color: #13a598;
+  box-shadow:
+    0 0 0 4px rgba(19, 165, 152, 0.08);
+}
+
+.auth-input-wrapper input {
+  width: 100%;
+  height: 100%;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: #17263a;
+  font: inherit;
+  text-align: right;
+}
+
+.auth-input-wrapper input::placeholder {
+  color: #b2bdc7;
+}
+
+.auth-password-toggle {
+  flex: 0 0 auto;
+  padding: 5px;
+  display: flex;
+  border: 0;
+  cursor: pointer;
+  color: #8b9aaa;
+  background: transparent;
+}
+
+.auth-password-toggle:hover {
+  color: #079b8f;
+}
+
+.auth-remember {
+  margin: 2px 0 24px;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  width: fit-content;
+  cursor: pointer;
+  color: #5e6c7d;
+  font-size: 14px;
+}
+
+.auth-remember input {
+  width: 17px;
+  height: 17px;
+  accent-color: #0a9e92;
+}
+
+.auth-error {
+  margin-bottom: 18px;
+  padding: 13px 15px;
+  border: 1px solid #f2c5c5;
+  border-radius: 13px;
+  color: #bd3232;
+  background: #fff4f4;
+  font-size: 13px;
+}
+
+.auth-submit {
+  width: 100%;
+  height: 56px;
+  border: 0;
+  border-radius: 15px;
+  cursor: pointer;
+  color: #fff;
+  background:
+    linear-gradient(
+      135deg,
+      #19b2a3,
+      #078e84
+    );
+  box-shadow:
+    0 12px 25px rgba(8, 143, 132, 0.2);
+  font: inherit;
+  font-size: 16px;
+  font-weight: 900;
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.auth-submit:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow:
+    0 16px 30px rgba(8, 143, 132, 0.25);
+}
+
+.auth-submit:disabled {
+  cursor: not-allowed;
+  opacity: 0.65;
+}
+
+.auth-footer-note {
+  margin-top: 24px;
+  padding-top: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  border-top: 1px solid #edf1f3;
+  color: #8b98a6;
+  font-size: 12px;
+}
+
+@media (max-width: 900px) {
+  .auth-page {
+    padding: 18px;
+  }
+
+  .auth-shell {
+    display: block;
+    min-height: auto;
+  }
+
+  .auth-brand-panel {
+    padding: 32px 20px;
+  }
+
+  .auth-brand-content {
+    margin-top: 0;
+  }
+
+  .auth-brand-logo {
+    width: 110px;
+    height: 110px;
+    margin-bottom: 18px;
+    border-radius: 27px;
+  }
+
+  .auth-brand-logo img {
+    width: 90px;
+    height: 90px;
+  }
+
+  .auth-brand-content h1 {
+    font-size: 22px;
+  }
+
+  .auth-brand-content p {
+    font-size: 13px;
+  }
+
+  .auth-features {
+    display: none;
+  }
+
+  .auth-form-panel {
+    padding: 20px;
+  }
+
+  .auth-card {
+    padding: 30px 22px;
+    border-radius: 22px;
+  }
+
+  .auth-heading h2 {
+    font-size: 27px;
+  }
+}
+
+@media (max-width: 520px) {
+  .auth-page {
+    padding: 0;
+    align-items: stretch;
+  }
+
+  .auth-shell {
+    border-radius: 0;
+    min-height: 100vh;
+  }
+
+  .auth-brand-panel {
+    padding: 26px 16px;
+  }
+
+  .auth-brand-content h1 {
+    font-size: 19px;
+  }
+
+  .auth-brand-content p {
+    display: none;
+  }
+
+  .auth-form-panel {
+    align-items: flex-start;
+    padding: 18px 14px 30px;
+  }
+
+  .auth-card {
+    padding: 26px 18px;
+  }
+}
+.sidebar {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  overflow: hidden;
+}
+.sidebar-nav {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding-bottom: 10px;
+}
+.sidebar-account {
+  flex: 0 0 auto;
+  margin: 10px 14px 8px;
+  padding: 10px 12px;
+  border: 1px solid rgba(10, 145, 134, 0.12);
+  border-radius: 24px;
+  background: rgba(255, 255, 255, 0.86);
+  box-shadow: 0 7px 20px rgba(20, 70, 67, 0.06);
+}
+.sidebar-account-top {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+}
+
+.sidebar-avatar {
+  position: relative;
+  width: 40px;
+  height: 40px;
+  flex: 0 0 40px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 50%;
+  color: #078f84;
+  background: #e2f7f4;
+}
+.sidebar-online-dot {
+  position: absolute;
+  left: 0;
+  bottom: 1px;
+
+  width: 9px;
+  height: 9px;
+
+  border: 2px solid #fff;
+  border-radius: 50%;
+
+  background: #24b66c;
+}
+.sidebar-account-info {
+  min-width: 0;
+  flex: 1;
+
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+.sidebar-account-info strong {
+  overflow: hidden;
+  font-size: 13px;
+  font-weight: 900;
+  color: #17263a;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.sidebar-account-info small {
+  font-size: 10px;
+  color: #8c99a5;
+}
+
+.sidebar-online {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  color: #22a763;
+  font-size: 10px;
+}
+
+.sidebar-online i {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+.sidebar-account-actions {
+  margin-top: 14px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 9px;
+}
+
+.sidebar-account-actions button {
+  height: 38px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #e2e9ed;
+  border-radius: 11px;
+  cursor: pointer;
+  color: #4d6271;
+  background: #fff;
+  transition:
+    color 0.2s ease,
+    border-color 0.2s ease,
+    background 0.2s ease;
+}
+
+.sidebar-account-actions button:hover {
+  color: #078f84;
+  border-color: #bfe8e3;
+  background: #f2fbfa;
+}
+
+.sidebar-logout-button {
+  width: 100%;
+  height: 44px;
+  margin-top: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border: 1px solid #f0b7b7;
+  border-radius: 12px;
+  cursor: pointer;
+  color: #d84545;
+  background: #fff7f7;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 800;
+  transition:
+    background 0.2s ease,
+    color 0.2s ease,
+    transform 0.2s ease;
+}
+
+.sidebar-logout-button:hover {
+  color: #fff;
+  background: #dc4b4b;
+  transform: translateY(-1px);
+}
+
+.sidebar-footer {
+  margin: auto 18px 15px;
+  padding-top: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  border-top: 1px solid rgba(77, 114, 112, 0.1);
+  color: #a1afae;
+  font-size: 10px;
+}
+.mobile-account-card {
+  margin: auto 14px 18px;
+  padding: 14px;
+  border-radius: 16px;
+  background: #fff;
+  box-shadow:
+    0 8px 20px rgba(19, 57, 54, 0.08);
+}
+
+.mobile-account-profile {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.mobile-account-avatar {
+  width: 42px;
+  height: 42px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  color: #078f84;
+  background: #e5f8f5;
+}
+
+.mobile-account-profile > div:last-child {
+  display: flex;
+  flex-direction: column;
+}
+
+.mobile-account-profile strong {
+  color: #17263a;
+  font-size: 13px;
+}
+
+.mobile-account-profile small {
+  margin-top: 2px;
+  color: #929fac;
+  font-size: 10px;
+}
+
+.mobile-account-card > button {
+  width: 100%;
+  height: 40px;
+  margin-top: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  border: 1px solid #f0b7b7;
+  border-radius: 11px;
+  cursor: pointer;
+  color: #d64545;
+  background: #fff6f6;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+
+
+/* =========================================================
+   FINAL SIDEBAR + ACCOUNT UI
+   این بخش باید آخرین بخش فایل app.css باشد
+========================================================= */
+
+/* ساختار اصلی سایدبار */
+.desktop-sidebar.sidebar {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  overflow: hidden;
+}
+
+/* لوگو و برند */
+.desktop-sidebar .brand {
+  flex: 0 0 auto;
+  padding: 14px 18px 16px;
+  gap: 10px;
+}
+
+.desktop-sidebar .brand-mark {
+  width: 146px;
+  height: 174px;
+  border-radius: 22px;
+}
+
+.desktop-sidebar .brand-copy strong {
+  color: #0f2826 !important;
+  font-size: 15px;
+  font-weight: 800;
+  line-height: 1.65;
+}
+
+.desktop-sidebar .brand-copy small {
+  margin-top: 2px;
+  color: #94a5a3;
+  font-size: 10.5px;
+}
+
+/* منو تمام فضای آزاد را می‌گیرد و در صورت نیاز فقط خودش اسکرول می‌شود */
+.desktop-sidebar .sidebar-nav {
+  flex: 1 1 auto;
+  min-height: 0;
+  height: auto;
+  padding: 8px 12px 10px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(13, 148, 136, 0.22) transparent;
+}
+
+.desktop-sidebar .sidebar-nav::-webkit-scrollbar {
+  width: 4px;
+}
+
+.desktop-sidebar .sidebar-nav::-webkit-scrollbar-thumb {
+  background: rgba(13, 148, 136, 0.22);
+  border-radius: 999px;
+}
+
+/* آیتم‌های منو کمی جمع‌وجورتر ولی همچنان خوانا */
+.desktop-sidebar .nav-item {
+  min-height: 44px;
+  margin: 2px 0;
+  padding: 6px 10px;
+  gap: 9px;
+  border-radius: 13px;
+}
+
+.desktop-sidebar .nav-icon {
+  width: 31px;
+  height: 31px;
+  flex: 0 0 31px;
+  border-radius: 9px;
+}
+
+.desktop-sidebar .nav-label {
+  font-size: 13px;
+  font-weight: 700;
+}
+
+/* =========================================================
+   کارت حساب کاربری
+========================================================= */
+
+.desktop-sidebar .sidebar-account {
+  flex: 0 0 auto;
+  display: block !important;
+  margin: 8px 12px 7px;
+  padding: 11px;
+  border: 1px solid #dbe9e7;
+  border-radius: 17px;
+  background: rgba(255, 255, 255, 0.93);
+  box-shadow: 0 10px 24px rgba(20, 70, 67, 0.07);
+}
+
+/* ردیف بالایی: آواتار + نام */
+.desktop-sidebar .sidebar-account-top {
+  display: flex !important;
+  align-items: center;
+  gap: 9px;
+  min-width: 0;
+}
+
+.desktop-sidebar .sidebar-avatar {
+  position: relative;
+  width: 42px;
+  height: 42px;
+  flex: 0 0 42px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 3px solid #ffffff;
+  border-radius: 50%;
+  color: #078f84;
+  background: linear-gradient(145deg, #e7faf7, #d1f2ed);
+  box-shadow: 0 5px 14px rgba(8, 143, 132, 0.13);
+}
+
+.desktop-sidebar .sidebar-online-dot {
+  position: absolute;
+  left: -1px;
+  bottom: 1px;
+  width: 10px;
+  height: 10px;
+  border: 2px solid #ffffff;
+  border-radius: 50%;
+  background: #20b66a;
+}
+
+.desktop-sidebar .sidebar-account-info {
+  min-width: 0;
+  flex: 1;
+  display: flex !important;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.desktop-sidebar .sidebar-account-info strong {
+  overflow: hidden;
+  color: #15263a;
+  font-size: 12.5px;
+  font-weight: 900;
+  line-height: 1.5;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.desktop-sidebar .sidebar-account-info small {
+  color: #8d9aa7;
+  font-size: 9.5px;
+  line-height: 1.5;
+}
+
+.desktop-sidebar .sidebar-online {
+  display: flex !important;
+  align-items: center;
+  gap: 4px;
+  margin-top: 1px;
+  color: #21a762;
+  font-size: 9px;
+}
+
+.desktop-sidebar .sidebar-online i {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+/* اعلان و تنظیمات - دو دکمه کنار هم */
+.desktop-sidebar .sidebar-account-actions {
+  display: grid !important;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 7px;
+  margin-top: 9px;
+}
+
+.desktop-sidebar .sidebar-account-actions button {
+  width: 100%;
+  height: 34px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border: 1px solid #dfe8eb;
+  border-radius: 10px;
+  color: #506675;
+  background: #ffffff;
+  box-shadow: none;
+}
+
+.desktop-sidebar .sidebar-account-actions button:hover {
+  color: #078f84;
+  border-color: #b9e2dd;
+  background: #f2fbfa;
+}
+
+/* خروج تمام عرض کارت */
+.desktop-sidebar .sidebar-logout-button {
+  width: 100% !important;
+  min-width: 0 !important;
+  height: 38px !important;
+  margin: 8px 0 0 !important;
+  padding: 0 10px !important;
+  display: flex !important;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  border: 1px solid #efb8b8;
+  border-radius: 11px;
+  color: #d64545;
+  background: #fff7f7;
+  font-size: 11.5px;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.desktop-sidebar .sidebar-logout-button:hover {
+  color: #ffffff;
+  border-color: #d64545;
+  background: #d64545;
+  transform: none;
+}
+
+/* اگر نسخه قدیمی دکمه خروج هنوز در JSX مانده باشد دیده نشود */
+.desktop-sidebar > .sidebar-logout {
+  display: none !important;
+}
+
+/* فوتر */
+.desktop-sidebar .sidebar-footer {
+  flex: 0 0 auto;
+  min-height: auto;
+  margin: 0 12px 8px;
+  padding: 8px 4px 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  border-top: 1px solid rgba(77, 114, 112, 0.08);
+  background: transparent;
+  color: #9eacab;
+  font-size: 8.5px;
+  line-height: 1.45;
+}
+
+.desktop-sidebar .sidebar-footer span {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+/* =========================================================
+   حالت تبلت - سایدبار جمع‌شده
+========================================================= */
+
+@media (max-width: 1020px) and (min-width: 721px) {
+  .desktop-sidebar .brand {
+    padding: 10px 7px;
+  }
+
+  .desktop-sidebar .brand-mark {
+    width: 54px;
+    height: 54px;
+    border-radius: 14px;
+  }
+
+  .desktop-sidebar .sidebar-nav {
+    padding: 7px;
+  }
+
+  .desktop-sidebar .nav-item {
+    min-height: 44px;
+    justify-content: center;
+    padding: 5px 0;
+  }
+
+  .desktop-sidebar .sidebar-account {
+    margin: 6px 7px;
+    padding: 7px;
+  }
+
+  .desktop-sidebar .sidebar-account-top {
+    justify-content: center;
+  }
+
+  .desktop-sidebar .sidebar-account-info,
+  .desktop-sidebar .sidebar-account-actions {
+    display: none !important;
+  }
+
+  .desktop-sidebar .sidebar-avatar {
+    width: 36px;
+    height: 36px;
+    flex-basis: 36px;
+    margin: 0 auto;
+  }
+
+  .desktop-sidebar .sidebar-logout-button {
+    width: 36px !important;
+    height: 34px !important;
+    margin: 7px auto 0 !important;
+    padding: 0 !important;
+  }
+
+  .desktop-sidebar .sidebar-logout-button span {
+    display: none;
+  }
+
+  .desktop-sidebar .sidebar-footer {
+    margin: 0 7px 7px;
+    padding-top: 7px;
+  }
+}
+
+/* =========================================================
+   کارت حساب کاربری موبایل
+========================================================= */
+
+@media (max-width: 720px) {
+  .mobile-account-card {
+    flex: 0 0 auto;
+    margin: 8px 12px 14px;
+    padding: 11px;
+    border: 1px solid #dbe9e7;
+    border-radius: 15px;
+    background: rgba(255, 255, 255, 0.95);
+    box-shadow: 0 7px 18px rgba(19, 57, 54, 0.07);
+  }
+
+  .mobile-account-profile {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+  }
+
+  .mobile-account-avatar {
+    width: 38px;
+    height: 38px;
+    flex: 0 0 38px;
+  }
+
+  .mobile-account-card > button {
+    width: 100%;
+    height: 38px;
+    margin-top: 9px;
+  }
+}
