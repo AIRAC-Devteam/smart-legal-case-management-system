@@ -54,6 +54,11 @@ class Case(models.Model):
         ("other", "دیگری"),
     ]
 
+    class WorkflowStep(models.IntegerChoices):
+        FORM = 1, "تشکیل پرونده"
+        REVIEW = 2, "تأیید اطلاعات"
+        DEFENSE = 3, "پیش‌نویس لایحه"
+
     case_name = models.CharField(max_length=255, blank=True)
     internal_ref = models.CharField(max_length=100, blank=True)
     case_number = models.CharField(max_length=150, db_index=True, blank=True)
@@ -104,6 +109,12 @@ class Case(models.Model):
         null=True,
         blank=True,
     )
+    workflow_step = models.PositiveSmallIntegerField(
+        choices=WorkflowStep.choices,
+        default=WorkflowStep.REVIEW,
+        db_index=True,
+    )
+    confirmed_at = models.DateTimeField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -112,6 +123,41 @@ class Case(models.Model):
 
     def __str__(self):
         return self.case_name or self.case_number or f"Case #{self.pk}"
+
+
+class CaseAttachment(models.Model):
+    case = models.ForeignKey(
+        Case,
+        on_delete=models.CASCADE,
+        related_name="attachments",
+    )
+    document = models.OneToOneField(
+        Document,
+        on_delete=models.CASCADE,
+        related_name="case_attachment",
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["created_at"]
+
+    def __str__(self):
+        return f"Attachment #{self.pk} - {self.document.original_name}"
+
+
+class LegalSource(models.Model):
+    title = models.CharField(max_length=255)
+    file = models.FileField(upload_to="legal_sources/%Y/%m/%d/")
+    original_name = models.CharField(max_length=255)
+    raw_text = models.TextField()
+    summary = models.TextField(blank=True)
+    status = models.CharField(max_length=20, default="processing")
+    error_message = models.TextField(blank=True)
+    sha256 = models.CharField(max_length=64)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["-created_at"]
 
 
 class DefenseDraft(models.Model):
@@ -130,6 +176,8 @@ class DefenseDraft(models.Model):
     title = models.CharField(max_length=255, blank=True)
     full_text = models.TextField()
     structured_data = models.JSONField(default=dict, blank=True)
+    source_snapshot = models.JSONField(default=list, blank=True)
+    attachment_snapshot = models.JSONField(default=list, blank=True)
     status = models.CharField(
         max_length=24,
         choices=Status.choices,

@@ -21,6 +21,24 @@ export default function DocumentUploader({
   onExtracted,
   document,
   onDocumentChange,
+  onResult,
+  uploadFile = uploadDocument,
+  retryFile = reextractDocument,
+  allowedTypes = ALLOWED_TYPES,
+  allowedExtensions = [],
+  accept = 'image/jpeg,image/png,image/webp,application/pdf',
+  title,
+  onTitleChange,
+  isComplete = (result) => result.status === 'completed',
+  isFailure = (result) => result.status === 'failed',
+  showRetry = () => true,
+  heading = 'بارگذاری سند قضایی',
+  description = 'فایل را انتخاب کنید یا با Drag & Drop در این بخش رها کنید',
+  fileHint = 'JPG، PNG، WEBP یا PDF — حداکثر ۱۲ مگابایت',
+  chooseLabel = 'انتخاب فایل',
+  retryLabel = 'پردازش مجدد',
+  formatError = 'فرمت مجاز: JPG، PNG، WEBP و PDF.',
+  disabled = false,
 }) {
   const inputRef = useRef(null)
   const [dragging, setDragging] = useState(false)
@@ -29,20 +47,28 @@ export default function DocumentUploader({
 
   const applyResult = (result) => {
     onDocumentChange?.(result)
+    onResult?.(result)
 
-    if (result.status === 'completed') {
+    if (isComplete(result)) {
       onExtracted?.(result.extracted_data || {}, result)
       return
     }
 
-    setError(result.error_message || 'پردازش سند انجام نشد.')
+    if (isFailure(result)) {
+      setError(result.error_message || 'پردازش سند انجام نشد.')
+    }
   }
 
   const processFile = async (file) => {
-    if (!file) return
+    if (!file || disabled) return
 
-    if (!ALLOWED_TYPES.has(file.type)) {
-      setError('فرمت مجاز: JPG، PNG، WEBP و PDF.')
+    const hasAllowedType = allowedTypes.has(file.type)
+    const hasAllowedExtension = allowedExtensions.some((extension) =>
+      file.name.toLowerCase().endsWith(extension.toLowerCase()),
+    )
+
+    if (!hasAllowedType && !hasAllowedExtension) {
+      setError(formatError)
       return
     }
 
@@ -55,7 +81,7 @@ export default function DocumentUploader({
     setError('')
 
     try {
-      const result = await uploadDocument(file)
+      const result = await uploadFile(file, title)
       applyResult(result)
     } catch (err) {
       setError(err.message || 'خطا در ارسال یا پردازش سند.')
@@ -67,13 +93,13 @@ export default function DocumentUploader({
 
   const reExtract = async (event) => {
     event.stopPropagation()
-    if (!document?.id) return
+    if (!document?.id || disabled) return
 
     setLoading(true)
     setError('')
 
     try {
-      const result = await reextractDocument(document.id)
+      const result = await retryFile(document.id)
       applyResult(result)
     } catch (err) {
       setError(err.message || 'پردازش مجدد انجام نشد.')
@@ -84,32 +110,49 @@ export default function DocumentUploader({
 
   return (
     <section className="upload-section">
+      {title !== undefined && onTitleChange && (
+        <label className="field-block">
+          <span className="field-label">عنوان سند (اختیاری)</span>
+          <input
+            maxLength={255}
+            value={title}
+            onChange={(event) => onTitleChange(event.target.value)}
+            placeholder="مثلاً قانون آیین دادرسی مدنی"
+            disabled={loading || disabled}
+          />
+        </label>
+      )}
+
       <div
-        className={`upload-box ${dragging ? 'dragging' : ''}`}
-        role="button"
-        tabIndex={0}
+        className={`upload-box ${dragging ? 'dragging' : ''} ${disabled ? 'disabled' : ''}`}
+        role={disabled ? undefined : 'button'}
+        aria-disabled={disabled}
+        tabIndex={disabled ? -1 : 0}
         onKeyDown={(event) => {
-          if ((event.key === 'Enter' || event.key === ' ') && !loading) {
+          if ((event.key === 'Enter' || event.key === ' ') && !loading && !disabled) {
             inputRef.current?.click()
           }
         }}
         onDragOver={(event) => {
           event.preventDefault()
+          if (disabled) return
           setDragging(true)
         }}
-        onDragLeave={() => setDragging(false)}
+        onDragLeave={() => !disabled && setDragging(false)}
         onDrop={(event) => {
           event.preventDefault()
+          if (disabled) return
           setDragging(false)
           processFile(event.dataTransfer.files?.[0])
         }}
-        onClick={() => !loading && inputRef.current?.click()}
+        onClick={() => !loading && !disabled && inputRef.current?.click()}
       >
         <input
           ref={inputRef}
           type="file"
-          accept="image/jpeg,image/png,image/webp,application/pdf"
+          accept={accept}
           hidden
+          disabled={disabled}
           onChange={(event) => processFile(event.target.files?.[0])}
         />
 
@@ -121,17 +164,13 @@ export default function DocumentUploader({
           )}
         </div>
 
-        <h2>بارگذاری سند قضایی</h2>
-        <p>
-          {loading
-            ? 'در حال ارسال و استخراج اطلاعات با هوش مصنوعی…'
-            : 'فایل را انتخاب کنید یا با Drag & Drop در این بخش رها کنید'}
-        </p>
-        <small>JPG، PNG، WEBP یا PDF — حداکثر ۱۲ مگابایت</small>
+        <h2>{heading}</h2>
+        <p>{loading ? 'در حال ارسال و پردازش سند…' : description}</p>
+        <small>{fileHint}</small>
 
         {!loading && !document && (
           <span className="upload-cta">
-            <UploadCloud size={18} /> انتخاب فایل
+            <UploadCloud size={18} /> {chooseLabel}
           </span>
         )}
       </div>
@@ -146,24 +185,21 @@ export default function DocumentUploader({
             </span>
             <div>
               <strong>{document.original_name || 'سند بارگذاری‌شده'}</strong>
-              <span>
-                وضعیت: {statusLabel(document.status)}
-                {document.extraction_engine
-                  ? ` · موتور: ${document.extraction_engine}`
-                  : ''}
-              </span>
+              <span>وضعیت: {statusLabel(document.status)}</span>
             </div>
           </div>
 
-          <button
-            className="btn ghost"
-            type="button"
-            onClick={reExtract}
-            disabled={loading}
-          >
-            <RefreshCw size={16} className={loading ? 'spin' : ''} />
-            پردازش مجدد
-          </button>
+          {showRetry(document) && (
+            <button
+              className="btn ghost"
+              type="button"
+              onClick={reExtract}
+              disabled={loading || disabled}
+            >
+              <RefreshCw size={16} className={loading ? 'spin' : ''} />
+              {retryLabel}
+            </button>
+          )}
         </div>
       )}
     </section>
@@ -175,6 +211,7 @@ function statusLabel(status) {
     uploaded: 'بارگذاری شده',
     processing: 'در حال پردازش',
     completed: 'استخراج کامل شد',
+    ready: 'آماده انتخاب',
     failed: 'ناموفق',
   }
   return labels[status] || status || 'نامشخص'

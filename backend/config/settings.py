@@ -1,14 +1,29 @@
 from pathlib import Path
 import os
 from dotenv import load_dotenv
+import dj_database_url
+DATABASE_URL = os.getenv("DATABASE_URL")
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 load_dotenv(BASE_DIR / ".env")
 
 SECRET_KEY = os.getenv("DJANGO_SECRET_KEY", "dev-only-secret-key")
-DEBUG = os.getenv("DJANGO_DEBUG", "True").lower() in {"1", "true", "yes", "on"}
-ALLOWED_HOSTS = [x.strip() for x in os.getenv("DJANGO_ALLOWED_HOSTS", "127.0.0.1,localhost,backend").split(",") if x.strip()]
+DEBUG = os.getenv("DJANGO_DEBUG", "False").lower() in {"1", "true", "yes", "on"}
+ALLOWED_HOSTS = [
+    "127.0.0.1",
+    "localhost",
+    "backend",
+    ".vercel.app",
+]
 
+extra_hosts = os.getenv("DJANGO_ALLOWED_HOSTS", "")
+
+if extra_hosts:
+    ALLOWED_HOSTS.extend(
+        host.strip()
+        for host in extra_hosts.split(",")
+        if host.strip()
+    )
 INSTALLED_APPS = [
     "django.contrib.admin",
     "django.contrib.auth",
@@ -18,6 +33,7 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "corsheaders",
     "rest_framework",
+    "rest_framework.authtoken",
     "cases",
 ]
 
@@ -52,17 +68,21 @@ TEMPLATES = [
 WSGI_APPLICATION = "config.wsgi.application"
 ASGI_APPLICATION = "config.asgi.application"
 
-SQLITE_DB_PATH = os.getenv(
-    "SQLITE_DB_PATH",
-    str(BASE_DIR / "db.sqlite3"),
-)
-
-DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.sqlite3",
-        "NAME": SQLITE_DB_PATH,
+if DATABASE_URL:
+    DATABASES = {
+        "default": dj_database_url.config(
+            default=DATABASE_URL,
+            conn_max_age=0,
+            conn_health_checks=True,
+        )
     }
-}
+else:
+    DATABASES = {
+        "default": {
+            "ENGINE": "django.db.backends.sqlite3",
+            "NAME": BASE_DIR / "db.sqlite3",
+        }
+    }
 AUTH_PASSWORD_VALIDATORS = []
 LANGUAGE_CODE = "fa-ir"
 TIME_ZONE = "Asia/Tehran"
@@ -71,26 +91,30 @@ USE_TZ = True
 STATIC_URL = "static/"
 STATIC_ROOT = BASE_DIR / "staticfiles"
 MEDIA_URL = "/media/"
-MEDIA_ROOT = BASE_DIR / "media"
+if os.getenv("VERCEL"):
+    MEDIA_ROOT = Path("/tmp/media")
+else:
+    MEDIA_ROOT = BASE_DIR / "media"
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 CORS_ALLOWED_ORIGINS = [
-    x.strip()
-    for x in os.getenv(
-         "CORS_ALLOWED_ORIGINS",
-        "http://localhost:5173,"
-        "http://127.0.0.1:5173,"
-        "http://localhost:3000,"
-        "http://127.0.0.1:3000",
-        ).split(",")
-    if x.strip()
+    "http://localhost:5173",
+    "http://127.0.0.1:5173",
+    "http://localhost:3000",
+    "http://127.0.0.1:3000",
+    "https://smart-legal-case-management-system.vercel.app",
 ]
-
+CORS_ALLOWED_ORIGIN_REGEXES = [
+    r"^https://.*\.vercel\.app$",
+]
 REST_FRAMEWORK = {
     "DEFAULT_RENDERER_CLASSES": ["rest_framework.renderers.JSONRenderer"],
     # Authentication is intentionally disabled for this MVP.
+        "DEFAULT_AUTHENTICATION_CLASSES": [
+        "rest_framework.authentication.TokenAuthentication",
+    ],
     # Add JWT/session auth before exposing a legal-document system publicly.
-    "DEFAULT_PERMISSION_CLASSES": ["rest_framework.permissions.AllowAny"],
+    "DEFAULT_PERMISSION_CLASSES": ["rest_framework.permissions.IsAuthenticated"],
 }
 
 DATA_UPLOAD_MAX_MEMORY_SIZE = int(os.getenv("MAX_UPLOAD_MB", "12")) * 1024 * 1024

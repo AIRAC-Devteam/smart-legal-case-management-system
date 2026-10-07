@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react'
+
 import {
+  Bell,
   BookOpenText,
   BriefcaseBusiness,
   Building2,
@@ -11,12 +13,24 @@ import {
   HelpCircle,
   Home,
   Inbox,
+  LogOut,
   Menu,
   PieChart,
+  Settings,
+  UserRound,
   X,
 } from 'lucide-react'
-import { Link, useLocation } from 'react-router-dom'
+
+import {
+  Link,
+  useLocation,
+  useNavigate,
+} from 'react-router-dom'
+
 import logoImg from '../assets/logowhite.png'
+import { clearAuthToken } from '../api/client'
+import '../styles/app.css'
+
 
 const items = [
   {
@@ -40,6 +54,7 @@ const items = [
     icon: FileSignature,
     badge: 'AI',
   },
+  { to: '/legal-repository', label: 'مخزن هوشمند قوانین', icon: BookOpenText },
   {
     to: '/inbox',
     label: 'کارتابل من',
@@ -77,12 +92,14 @@ const items = [
   },
 ]
 
+
 const mobileMainPaths = [
   '/',
   '/cases/new',
   '/cases',
   '/inbox',
 ]
+
 
 function getActivePath(pathname) {
   if (pathname === '/') {
@@ -115,35 +132,77 @@ function getActivePath(pathname) {
   return matchedItem?.to || ''
 }
 
+
 export default function Sidebar() {
   const { pathname } = useLocation()
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+  const navigate = useNavigate()
 
-  const activePath = getActivePath(pathname)
+  const [mobileMenuOpen, setMobileMenuOpen] =
+    useState(false)
 
-  const mobileMainItems = items.filter((item) =>
-    mobileMainPaths.includes(item.to),
-  )
+  const username =
+    localStorage.getItem('auth_username') ||
+    'admin'
+
+  const activePath =
+    getActivePath(pathname)
+
+  const mobileMainItems =
+    items.filter((item) =>
+      mobileMainPaths.includes(item.to),
+    )
+
+
+  const handleLogout = () => {
+    clearAuthToken()
+
+    localStorage.removeItem(
+      'auth_username',
+    )
+
+    localStorage.removeItem(
+      'auth_remember',
+    )
+
+    setMobileMenuOpen(false)
+
+    navigate('/login', {
+      replace: true,
+    })
+  }
+
 
   useEffect(() => {
     setMobileMenuOpen(false)
   }, [pathname])
 
+
   useEffect(() => {
-    document.body.style.overflow = mobileMenuOpen
-      ? 'hidden'
-      : ''
+    document.body.style.overflow =
+      mobileMenuOpen
+        ? 'hidden'
+        : ''
 
     return () => {
       document.body.style.overflow = ''
     }
   }, [mobileMenuOpen])
-
+const displayUsername =
+  username
+    .replace('alireza', 'علیرضا')
+    .replace('admin', 'ادمین')
+    .replace('aghakhani','آقاخانی')
   return (
     <>
-      {/* سایدبار دسکتاپ */}
+      {/* =========================
+          SIDEBAR DESKTOP
+      ========================== */}
+
       <aside className="sidebar desktop-sidebar">
+
+        {/* Brand */}
         <div className="brand">
+
           <div className="brand-mark">
             <img
               src={logoImg}
@@ -152,16 +211,24 @@ export default function Sidebar() {
           </div>
 
           <div className="brand-copy">
-            <strong style={{ color: 'black' }}>
+
+            <strong
+              style={{
+                color: 'black',
+              }}
+            >
               سامانه حقوقی جهاد دانشگاهی
             </strong>
 
             <small>
               مدیریت هوشمند پرونده‌ها
             </small>
+
           </div>
         </div>
 
+
+        {/* Main navigation */}
         <nav
           className="sidebar-nav"
           aria-label="منوی اصلی"
@@ -173,16 +240,21 @@ export default function Sidebar() {
               icon: Icon,
               badge,
             }) => {
-              const active = activePath === to
+
+              const active =
+                activePath === to
 
               return (
                 <Link
                   key={to}
                   to={to}
                   className={`nav-item ${
-                    active ? 'active' : ''
+                    active
+                      ? 'active'
+                      : ''
                   }`}
                 >
+
                   <span className="nav-icon">
                     <Icon size={21} />
                   </span>
@@ -196,65 +268,153 @@ export default function Sidebar() {
                       {badge}
                     </span>
                   )}
+
                 </Link>
               )
             },
           )}
         </nav>
 
+
+        {/* =========================
+            ACCOUNT DESKTOP
+        ========================== */}
+
+        <div className="sidebar-account">
+
+          <div className="sidebar-account-top">
+
+            <div className="sidebar-avatar">
+              <UserRound size={22} />
+
+              <span className="sidebar-online-dot" />
+            </div>
+
+
+            <div className="sidebar-account-info">
+
+              <strong>
+                {displayUsername}
+              </strong>
+
+              <small>
+                مدیر سامانه
+              </small>
+
+              <span className="sidebar-online">
+                <i />
+                آنلاین
+              </span>
+
+            </div>
+
+          </div>
+
+
+          
+
+
+          <button
+            type="button"
+            className="sidebar-logout-button"
+            onClick={handleLogout}
+          >
+            <LogOut size={18} />
+
+            <span>
+              خروج از حساب
+            </span>
+          </button>
+
+        </div>
+
+
+        {/* Sidebar footer */}
         <div className="sidebar-footer">
-          <BriefcaseBusiness size={18} />
+
+          <BriefcaseBusiness size={16} />
 
           <span>
             مرکز راهبری پژوهش و پیشرفت هوش مصنوعی
           </span>
+
         </div>
+
       </aside>
 
-      {/* دکمه سه‌خط موبایل */}
+
+      {/* =========================
+          MOBILE MENU BUTTON
+      ========================== */}
+
       <button
         type="button"
         className="mobile-menu-toggle"
-        onClick={() => setMobileMenuOpen(true)}
+        onClick={() =>
+          setMobileMenuOpen(true)
+        }
         aria-label="باز کردن منوی اصلی"
         aria-expanded={mobileMenuOpen}
       >
         <Menu size={24} />
       </button>
 
-      {/* لایه تاریک پشت منو */}
+
+      {/* =========================
+          MOBILE OVERLAY
+      ========================== */}
+
       <button
         type="button"
         className={`mobile-menu-overlay ${
-          mobileMenuOpen ? 'open' : ''
+          mobileMenuOpen
+            ? 'open'
+            : ''
         }`}
-        onClick={() => setMobileMenuOpen(false)}
+        onClick={() =>
+          setMobileMenuOpen(false)
+        }
         aria-label="بستن منو"
       />
 
-      {/* منوی کشویی کامل موبایل */}
+
+      {/* =========================
+          MOBILE DRAWER
+      ========================== */}
+
       <aside
         className={`mobile-menu-drawer ${
-          mobileMenuOpen ? 'open' : ''
+          mobileMenuOpen
+            ? 'open'
+            : ''
         }`}
         aria-hidden={!mobileMenuOpen}
       >
+
         <div className="mobile-drawer-header">
-          <strong>منوی سامانه</strong>
+
+          <strong>
+            منوی سامانه
+          </strong>
 
           <button
             type="button"
-            onClick={() => setMobileMenuOpen(false)}
+            onClick={() =>
+              setMobileMenuOpen(false)
+            }
             aria-label="بستن منو"
           >
             <X size={22} />
           </button>
+
         </div>
+
 
         <nav
           className="mobile-drawer-nav"
           aria-label="منوی کامل موبایل"
         >
+
           {items.map(
             ({
               to,
@@ -262,7 +422,9 @@ export default function Sidebar() {
               icon: Icon,
               badge,
             }) => {
-              const active = activePath === to
+
+              const active =
+                activePath === to
 
               return (
                 <Link
@@ -272,53 +434,121 @@ export default function Sidebar() {
                     setMobileMenuOpen(false)
                   }
                   className={`mobile-drawer-item ${
-                    active ? 'active' : ''
+                    active
+                      ? 'active'
+                      : ''
                   }`}
                 >
+
                   <span className="mobile-drawer-icon">
                     <Icon size={21} />
                   </span>
 
-                  <span>{label}</span>
+                  <span>
+                    {label}
+                  </span>
 
                   {badge && (
-                    <small>{badge}</small>
+                    <small>
+                      {badge}
+                    </small>
                   )}
+
                 </Link>
               )
             },
           )}
+
         </nav>
+
+
+        {/* =========================
+            ACCOUNT MOBILE
+        ========================== */}
+
+        <div className="mobile-account-card">
+
+          <div className="mobile-account-profile">
+
+            <div className="mobile-account-avatar">
+              <UserRound size={22} />
+            </div>
+
+
+            <div>
+
+              <strong>
+                {displayUsername}
+              </strong>
+
+              <small>
+                مدیر سامانه
+              </small>
+
+            </div>
+
+          </div>
+
+
+          <button
+            type="button"
+            onClick={handleLogout}
+          >
+            <LogOut size={18} />
+
+            <span>
+              خروج از حساب
+            </span>
+          </button>
+
+        </div>
+
       </aside>
 
-      {/* چهار گزینه اصلی پایین موبایل */}
+
+      {/* =========================
+          MOBILE BOTTOM NAVIGATION
+      ========================== */}
+
       <nav
         className="mobile-bottom-nav"
         aria-label="دسترسی سریع موبایل"
       >
+
         {mobileMainItems.map(
           ({
             to,
             label,
             icon: Icon,
           }) => {
-            const active = activePath === to
+
+            const active =
+              activePath === to
 
             return (
               <Link
                 key={to}
                 to={to}
                 className={`mobile-bottom-item ${
-                  active ? 'active' : ''
+                  active
+                    ? 'active'
+                    : ''
                 }`}
               >
+
                 <Icon size={22} />
-                <span>{label}</span>
+
+                <span>
+                  {label}
+                </span>
+
               </Link>
             )
           },
         )}
+
       </nav>
+
     </>
   )
 }

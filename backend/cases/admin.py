@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import Case, DefenseDraft, Document
+from .models import Case, CaseAttachment, DefenseDraft, Document
 
 
 @admin.register(Case)
@@ -21,6 +21,16 @@ class CaseAdmin(admin.ModelAdmin):
 class DocumentAdmin(admin.ModelAdmin):
     list_display = ("id", "original_name", "status", "extraction_engine", "created_at")
     list_filter = ("status", "extraction_engine")
+
+
+@admin.register(CaseAttachment)
+class CaseAttachmentAdmin(admin.ModelAdmin):
+    list_display = ("id", "case", "document", "created_at")
+    search_fields = (
+        "case__case_name",
+        "case__case_number",
+        "document__original_name",
+    )
 
 
 @admin.register(DefenseDraft)

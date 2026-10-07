@@ -267,7 +267,7 @@ const draftSeries = useMemo(() => ({
         <div className="empty-state large-empty">
           <FileSignature size={38} />
           <strong>هنوز پیش‌نویسی ذخیره نشده است</strong>
-          <span>از صفحه جزئیات یکی از پرونده‌ها، لایحه دفاعیه تولید کنید.</span>
+          <span>از مرحله «پیش‌نویس لایحه» در یکی از پرونده‌ها، نسخه جدید تولید کنید.</span>
           <Link className="btn primary" to="/cases">مشاهده پرونده‌ها</Link>
         </div>
       ) : (
@@ -351,6 +351,7 @@ const draftSeries = useMemo(() => ({
                 </label>
 
                 <div className="legal-review-note">
+                  <p>منابع این نسخه: {editor.source_snapshot?.length ? editor.source_snapshot.map(s => s.title).join('، ') : 'بدون منبع از مخزن'}</p>
                   این متن باید پیش از استفاده رسمی توسط کارشناس حقوقی بررسی و تأیید شود.
                 </div>
 

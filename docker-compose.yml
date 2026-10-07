@@ -1,4 +1,16 @@
 services:
+
+  db:
+  image: pgvector/pgvector:pg16
+  environment:
+    POSTGRES_DB: legal_case
+    POSTGRES_USER: legal_case
+    POSTGRES_PASSWORD: legal_case_dev_password
+  volumes:
+    - postgres_data:/var/lib/postgresql/data
+  healthcheck:
+    test: ["CMD-SHELL", "pg_isready -U legal_case -d legal_case"]
+
   backend:
     container_name: legal-case-backend
 
@@ -22,6 +34,11 @@ services:
     environment:
       DJANGO_ALLOWED_HOSTS: localhost,127.0.0.1,backend
       SQLITE_DB_PATH: /data/db.sqlite3
+      DATABASE_URL: postgresql://legal_case:legal_case_dev_password@db:5432/legal_case
+
+    depends_on:
+      db:
+        condition: service_healthy
 
     volumes:
       - backend_db:/data
