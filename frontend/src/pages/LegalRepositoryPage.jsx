@@ -62,7 +62,7 @@ export default function LegalRepositoryPage() {
           document={uploadedSource}
           onDocumentChange={setUploadedSource}
           onResult={handleSourceResult}
-          uploadFile={(file) => uploadLegalSource(file, title)}
+          uploadFile={(file, _title, progress) => uploadLegalSource(file, title, progress)}
           retryFile={retryLegalSource}
           allowedTypes={new Set(['application/vnd.openxmlformats-officedocument.wordprocessingml.document'])}
           allowedExtensions={['.docx']}

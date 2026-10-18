@@ -44,6 +44,10 @@ export default function DocumentUploader({
   const [dragging, setDragging] = useState(false)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+  const [phase, setPhase] = useState('idle')
+  const [percent, setPercent] = useState(0)
+  const [uploadingFile, setUploadingFile] = useState(null)
+  const abortRef = useRef(null)
 
   const applyResult = (result) => {
     onDocumentChange?.(result)
@@ -77,18 +81,41 @@ export default function DocumentUploader({
       return
     }
 
+    const controller = new AbortController()
+    abortRef.current = controller
+
     setLoading(true)
     setError('')
+    setUploadingFile(file)
+    setPercent(0)
+    setPhase('uploading')
 
     try {
-      const result = await uploadFile(file, title)
+      const result = await uploadFile(file, title, {
+        signal: controller.signal,
+        onProgress: setPercent,
+        onSent: () => {
+          setPercent(100)
+          setPhase('processing')
+        },
+      })
       applyResult(result)
     } catch (err) {
-      setError(err.message || 'خطا در ارسال یا پردازش سند.')
+      if (err?.name !== 'AbortError') {
+        setError(err.message || 'خطا در ارسال یا پردازش سند.')
+      }
     } finally {
+      abortRef.current = null
       setLoading(false)
+      setPhase('idle')
+      setUploadingFile(null)
       if (inputRef.current) inputRef.current.value = ''
     }
+  }
+
+  const cancelUpload = (event) => {
+    event.stopPropagation()
+    abortRef.current?.abort()
   }
 
   const reExtract = async (event) => {
@@ -123,6 +150,14 @@ export default function DocumentUploader({
         </label>
       )}
 
+      {phase !== 'idle' && uploadingFile ? (
+        <UploadProgressCard
+          file={uploadingFile}
+          phase={phase}
+          percent={percent}
+          onCancel={cancelUpload}
+        />
+      ) : (
       <div
         className={`upload-box ${dragging ? 'dragging' : ''} ${disabled ? 'disabled' : ''}`}
         role={disabled ? undefined : 'button'}
@@ -174,6 +209,7 @@ export default function DocumentUploader({
           </span>
         )}
       </div>
+      )}
 
       {error && <div className="error-banner">{error}</div>}
 
@@ -203,6 +239,63 @@ export default function DocumentUploader({
         </div>
       )}
     </section>
+  )
+}
+
+const faNumber = (value) => Number(value).toLocaleString('fa-IR')
+
+function formatSize(bytes) {
+  if (bytes < 1024 * 1024) return `${faNumber(Math.max(1, Math.round(bytes / 1024)))} کیلوبایت`
+  return `${Number((bytes / (1024 * 1024)).toFixed(1)).toLocaleString('fa-IR')} مگابایت`
+}
+
+function fileFormat(file) {
+  const ext = file.name.includes('.') ? file.name.split('.').pop() : ''
+  return (ext || file.type.split('/').pop() || '').toUpperCase()
+}
+
+function UploadProgressCard({ file, phase, percent, onCancel }) {
+  const uploading = phase === 'uploading'
+
+  return (
+    <div className="upload-progress-card" role="status" aria-live="polite">
+      <div className="upload-progress-top">
+        <span className="upload-progress-badge">
+          <i /> {uploading ? 'در حال بارگذاری فایل' : 'در حال پردازش با هوش مصنوعی'}
+        </span>
+        {uploading && (
+          <button type="button" className="upload-cancel" onClick={onCancel}>
+            لغو آپلود ×
+          </button>
+        )}
+      </div>
+
+      <div className="upload-progress-body">
+        <div
+          className={`upload-ring ${uploading ? '' : 'indeterminate'}`}
+          style={{ '--pct': `${uploading ? percent : 28}%` }}
+        >
+          <span>{uploading ? `${faNumber(percent)}٪` : <Loader2 className="spin" size={30} />}</span>
+        </div>
+
+        <div className="upload-progress-file">
+          <strong dir="auto">{file.name}</strong>
+          <span>{formatSize(file.size)} • {fileFormat(file)}</span>
+        </div>
+        <span className="upload-progress-icon"><FileText size={26} /></span>
+      </div>
+
+      <div className="upload-progress-meta">
+        <strong>{uploading ? 'در حال انتقال فایل…' : 'در حال استخراج اطلاعات از سند…'}</strong>
+        {uploading && <span>{faNumber(percent)} از {faNumber(100)} درصد</span>}
+      </div>
+      <div className="upload-bar">
+        <div
+          className={uploading ? '' : 'indeterminate'}
+          style={uploading ? { width: `${percent}%` } : undefined}
+        />
+      </div>
+    </div>
   )
 }
 

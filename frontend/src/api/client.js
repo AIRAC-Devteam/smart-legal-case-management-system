@@ -95,6 +95,51 @@ async function authFetch(url, options = {}) {
 
   return response
 }
+
+// fetch cannot report upload progress, so file uploads go through XHR.
+// onProgress(percent) fires while bytes are sent; onSent() when the whole body
+// has reached the server (the server may still be processing it).
+function xhrUpload(url, body, { onProgress, onSent, signal } = {}) {
+  return new Promise((resolve, reject) => {
+    const xhr = new XMLHttpRequest()
+    xhr.open('POST', url)
+
+    const token = getAuthToken()
+    if (token) xhr.setRequestHeader('Authorization', `Token ${token}`)
+
+    xhr.upload.onprogress = (event) => {
+      if (event.lengthComputable) {
+        onProgress?.(Math.round((event.loaded / event.total) * 100))
+      }
+    }
+    xhr.upload.onload = () => onSent?.()
+    xhr.onerror = () => reject(new Error('ارتباط با سرور برقرار نشد.'))
+    xhr.onabort = () => reject(new DOMException('Upload aborted', 'AbortError'))
+    xhr.onload = () => {
+      if (xhr.status === 401) {
+        clearAuthToken()
+        if (window.location.pathname !== '/login') {
+          window.location.href = '/login'
+        }
+      }
+      const response = new Response(xhr.status === 204 ? null : xhr.responseText, {
+        status: xhr.status,
+      })
+      parseResponse(response).then(resolve, reject)
+    }
+
+    if (signal) {
+      if (signal.aborted) {
+        xhr.abort()
+        return
+      }
+      signal.addEventListener('abort', () => xhr.abort(), { once: true })
+    }
+
+    xhr.send(body)
+  })
+}
+
 function buildQuery(params = {}) {
   const query = new URLSearchParams()
   Object.entries(params).forEach(([key, value]) => {
@@ -112,18 +157,13 @@ export async function healthCheck() {
 }
 
 // Documents
-export async function uploadDocument(file) {
+export async function uploadDocument(file, _title, progress) {
   if (!file) throw new Error('فایلی انتخاب نشده است.')
 
   const formData = new FormData()
   formData.append('file', file)
 
-  return parseResponse(
-    await authFetch(`${API_BASE}/documents/`, {
-      method: 'POST',
-      body: formData,
-    }),
-  )
+  return xhrUpload(`${API_BASE}/documents/`, formData, progress)
 }
 
 export async function getDocument(documentId) {
@@ -343,11 +383,11 @@ export async function getLegalSources() {
   return parseResponse(await authFetch(`${API_BASE}/legal-sources/`))
 }
 
-export async function uploadLegalSource(file, title) {
+export async function uploadLegalSource(file, title, progress) {
   const body = new FormData()
   body.append('file', file)
   body.append('title', title)
-  return parseResponse(await authFetch(`${API_BASE}/legal-sources/`, { method: 'POST', body }))
+  return xhrUpload(`${API_BASE}/legal-sources/`, body, progress)
 }
 
 export async function retryLegalSource(id) {
