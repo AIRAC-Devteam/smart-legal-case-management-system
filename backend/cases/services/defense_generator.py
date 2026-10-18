@@ -4,6 +4,7 @@ import os
 from google import genai
 
 from .defense_schema import DEFENSE_RESPONSE_SCHEMA
+from .gemini_models import create_interaction
 
 
 class DefenseGenerationError(RuntimeError):
@@ -20,7 +21,6 @@ def generate_defense_brief(
     if not api_key:
         raise DefenseGenerationError("سرویس هوش مصنوعی تنظیم نشده است.")
 
-    model = os.getenv("GEMINI_MODEL", "gemini-3.6-flash").strip()
     source_data = {
         "confirmed_case": case_data or {},
         "extracted_document": extracted_data or {},
@@ -71,8 +71,8 @@ def generate_defense_brief(
 
     try:
         client = genai.Client(api_key=api_key)
-        interaction = client.interactions.create(
-            model=model,
+        interaction, model_used = create_interaction(
+            client,
             input=prompt,
             response_format={
                 "type": "text",
@@ -100,4 +100,5 @@ def generate_defense_brief(
     if not isinstance(result.get("full_text"), str) or not result["full_text"].strip():
         raise DefenseGenerationError("متن لایحه در پاسخ سرویس هوش مصنوعی خالی بود.")
 
+    result["_model_used"] = model_used
     return result

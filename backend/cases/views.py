@@ -1,3 +1,4 @@
+import logging
 import os
 from pathlib import Path
 
@@ -32,6 +33,7 @@ from .services.defense_generator import (
     generate_defense_brief,
 )
 from .services.extraction import extract_document
+from .services.gemini_models import configured_models
 from .services.legal_source_recommender import (
     LegalSourceRecommendationError,
     recommend_legal_sources,
@@ -45,6 +47,8 @@ ALLOWED_DOCUMENT_TYPES = {
     "application/pdf",
 }
 MAX_CASE_ATTACHMENTS = 5
+
+logger = logging.getLogger(__name__)
 
 
 @api_view(["GET"])
@@ -133,10 +137,9 @@ class DocumentViewSet(viewsets.ModelViewSet):
             document.status = Document.Status.COMPLETED
             document.error_message = ""
         except Exception as exc:
+            logger.exception("Document %s extraction failed", document.pk)
             document.status = Document.Status.FAILED
-            document.error_message = {
-                   "استخراج متن از فایل انجام نشد."
-            }
+            document.error_message = f"استخراج متن از فایل انجام نشد. ({exc})"
         finally:
             document.processed_at = timezone.now()
             document.save()
@@ -459,6 +462,8 @@ class CaseViewSet(viewsets.ModelViewSet):
                 status=status.HTTP_502_BAD_GATEWAY,
             )
 
+        model_used = result.pop("_model_used", None) or configured_models()[0]
+
         with transaction.atomic():
             locked_case = Case.objects.select_for_update().get(pk=case.pk)
             last_version = (
@@ -477,7 +482,7 @@ class CaseViewSet(viewsets.ModelViewSet):
                 attachment_snapshot=selected_attachments,
                 status=DefenseDraft.Status.DRAFT,
                 source_engine="gemini",
-                model_name=os.getenv("GEMINI_MODEL", "gemini-3.6-flash"),
+                model_name=model_used,
                 requires_legal_review=True,
             )
 

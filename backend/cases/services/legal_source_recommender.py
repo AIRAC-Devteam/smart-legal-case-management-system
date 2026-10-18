@@ -3,6 +3,8 @@ import os
 
 from google import genai
 
+from .gemini_models import create_interaction
+
 
 RECOMMENDATION_SCHEMA = {
     "type": "object",
@@ -40,7 +42,6 @@ def recommend_legal_sources(case_data: dict, legal_sources: list) -> dict:
     if not api_key:
         raise LegalSourceRecommendationError("سرویس هوش مصنوعی تنظیم نشده است.")
 
-    model = os.getenv("GEMINI_MODEL", "gemini-3.6-flash").strip()
     prompt_data = {
         "confirmed_case": case_data or {},
         "candidate_legal_sources": legal_sources or [],
@@ -66,8 +67,8 @@ def recommend_legal_sources(case_data: dict, legal_sources: list) -> dict:
 
     try:
         client = genai.Client(api_key=api_key)
-        interaction = client.interactions.create(
-            model=model,
+        interaction, _ = create_interaction(
+            client,
             input=prompt,
             response_format={
                 "type": "text",

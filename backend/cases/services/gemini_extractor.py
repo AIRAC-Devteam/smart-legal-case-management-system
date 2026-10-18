@@ -6,6 +6,7 @@ from pathlib import Path
 
 from google import genai
 
+from .gemini_models import create_interaction
 from .schema import GEMINI_RESPONSE_SCHEMA
 
 
@@ -105,7 +106,6 @@ def extract_notice_with_gemini(file_path: str) -> dict:
     "prefix =", api_key[:3],
     "suffix =", api_key[-4:] if len(api_key) >= 4 else "",
     )
-    model = os.getenv("GEMINI_MODEL", "gemini-3.6-flash").strip()
     file_base64, mime_type = _read_document(file_path)
 
     prompt = """
@@ -158,8 +158,8 @@ Rules:
 
     try:
         client = genai.Client(api_key=api_key)
-        interaction = client.interactions.create(
-            model=model,
+        interaction, _ = create_interaction(
+            client,
             input=[
                 {"type": "text", "text": prompt},
                 media_part,
